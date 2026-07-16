@@ -1,0 +1,178 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ project.soNumber }} - CloudBill{% endblock %}
+{% block page_title %}Détails du Projet (SO){% endblock %}
+
+{% block body %}
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h4 class="fw-bold mb-0">{{ project.soNumber }}</h4>
+                <div>
+                    <a href="{{ path('app_project_edit', {'id': project.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+                </div>
+            </div>
+            
+            <h5 class="fw-semibold text-accent mb-4">{{ project.name }}</h5>
+            
+            <ul class="list-unstyled mb-0">
+                <li class="mb-3 d-flex align-items-center">
+                    <div class="bg-secondary bg-opacity-25 rounded p-2 me-3 text-center" style="width: 35px;"><i class="fas fa-building text-white"></i></div>
+                    <div>
+                        <small class="text-muted d-block lh-1">Société Cliente</small>
+                        <a href="{{ path('app_company_show', {'id': project.company.id}) }}" class="fw-medium text-decoration-none text-light hover-accent">{{ project.company.name }}</a>
+                    </div>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                    <div class="bg-secondary bg-opacity-25 rounded p-2 me-3 text-center" style="width: 35px;"><i class="fas fa-calendar-alt text-white"></i></div>
+                    <div>
+                        <small class="text-muted d-block lh-1">Date de début</small>
+                        <span class="fw-medium">{{ project.startDate|date('d/m/Y') }}</span>
+                    </div>
+                </li>
+                <li class="d-flex align-items-center">
+                    <div class="bg-secondary bg-opacity-25 rounded p-2 me-3 text-center" style="width: 35px;"><i class="fas fa-info-circle text-white"></i></div>
+                    <div>
+                        <small class="text-muted d-block lh-1">Statut</small>
+                        {% set badgeColor = project.status == 'Actif' ? 'success' : (project.status == 'En pause' ? 'warning' : 'secondary') %}
+                        <span class="badge bg-{{ badgeColor }} bg-opacity-25 text-{{ badgeColor }} border border-{{ badgeColor }} border-opacity-25">{{ project.status }}</span>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                <small class="text-muted">Créé le {{ project.createdAt|date('d/m/Y') }}</small>
+                
+                <form method="post" action="{{ path('app_project_delete', {'id': project.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce projet ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+                    <button class="btn btn-sm btn-outline-danger border-0"><i class="fas fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="glass-card p-4 h-100">
+            <!-- Tabs Nav -->
+            <ul class="nav nav-tabs border-secondary border-opacity-25 mb-4" id="projectTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link bg-transparent text-light active border-0 border-bottom border-3 border-primary" id="offer-tab" data-bs-toggle="tab" data-bs-target="#offer" type="button" role="tab">Offre Financière Active</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link bg-transparent text-muted border-0 border-bottom border-3 border-transparent" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices" type="button" role="tab">Factures ({{ project.invoices|length }})</button>
+                </li>
+            </ul>
+
+            <!-- Tabs Content -->
+            <div class="tab-content" id="projectTabsContent">
+                
+                <!-- Financial Offer Tab -->
+                <div class="tab-pane fade show active" id="offer" role="tabpanel">
+                    {% set activeOffer = project.activeOffer %}
+                    {% if activeOffer %}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Version {{ activeOffer.version }} <span class="badge bg-success bg-opacity-10 text-success ms-2">Active</span></h6>
+                                <small class="text-muted">Effective depuis le {{ activeOffer.effectiveDate|date('d/m/Y') }}</small>
+                            </div>
+                            <a href="{{ path('app_financial_offer_new', {'project_id': project.id}) }}" class="btn btn-sm btn-outline-light"><i class="fas fa-upload me-1"></i> Importer nouvelle offre</a>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-sm table-dark table-hover mt-3">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Ressource</th>
+                                        <th>Type</th>
+                                        <th>Unité</th>
+                                        <th class="text-end">Prix Unitaire</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for line in activeOffer.offerLines %}
+                                        <tr>
+                                            <td>{{ line.resourceName }}</td>
+                                            <td>{{ line.serviceType|default('-') }}</td>
+                                            <td>{{ line.unit }}</td>
+                                            <td class="text-end text-accent fw-medium">{{ line.unitPrice }} TND</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-invoice-dollar fs-2 text-muted mb-3 d-block"></i>
+                            <h6 class="text-muted">Aucune offre financière associée à ce projet.</h6>
+                            <a href="{{ path('app_financial_offer_new', {'project_id': project.id}) }}" class="btn btn-primary mt-3"><i class="fas fa-upload me-2"></i> Importer une offre (Excel/PDF)</a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Invoices Tab -->
+                <div class="tab-pane fade" id="invoices" role="tabpanel">
+                    <div class="d-flex justify-content-end mb-3">
+                        <a href="{{ path('app_invoice_generate', {'project_id': project.id}) }}" class="btn btn-sm btn-success"><i class="fas fa-plus me-1"></i> Générer Facture Mensuelle</a>
+                    </div>
+                    <table class="table table-dark table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Référence</th>
+                                <th>Période</th>
+                                <th>Total TTC</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in project.invoices %}
+                                <tr>
+                                    <td>{{ invoice.reference }}</td>
+                                    <td>{{ invoice.monthName }} {{ invoice.year }}</td>
+                                    <td class="fw-bold">{{ invoice.totalTTC }} {{ invoice.currency }}</td>
+                                    <td>
+                                        {% if invoice.status == 'Validée' %}
+                                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25"><i class="fas fa-check-circle me-1"></i> Validée</span>
+                                        {% else %}
+                                            <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25"><i class="fas fa-pencil-alt me-1"></i> Brouillon</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('app_invoice_edit', {'project_id': project.id, 'id': invoice.id}) }}" class="btn btn-sm btn-outline-light border-0" title="Consulter/Modifier"><i class="fas fa-eye text-info"></i></a>
+                                        {% if invoice.status == 'Validée' %}
+                                            <a href="{{ path('app_invoice_export_pdf', {'project_id': project.id, 'id': invoice.id}) }}" class="btn btn-sm btn-outline-light border-0" title="Télécharger PDF"><i class="fas fa-file-pdf text-danger"></i></a>
+                                            <a href="{{ path('app_invoice_export_excel', {'project_id': project.id, 'id': invoice.id}) }}" class="btn btn-sm btn-outline-light border-0" title="Télécharger Excel"><i class="fas fa-file-excel text-success"></i></a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted fst-italic">Aucune facture générée.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // Simple script to handle tab active state classes for custom styling
+    document.querySelectorAll('#projectTabs .nav-link').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', event => {
+            document.querySelectorAll('#projectTabs .nav-link').forEach(t => {
+                t.classList.remove('text-light', 'border-primary');
+                t.classList.add('text-muted', 'border-transparent');
+            });
+            event.target.classList.remove('text-muted', 'border-transparent');
+            event.target.classList.add('text-light', 'border-primary');
+        });
+    });
+</script>
+{% endblock %}

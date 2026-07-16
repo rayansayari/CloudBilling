@@ -1,0 +1,38 @@
+{{ form_start(form) }}
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="mb-3">
+            {{ form_label(form.company) }}
+            {{ form_widget(form.company, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.company) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.soNumber) }}
+            {{ form_widget(form.soNumber, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.soNumber) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.name) }}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            {{ form_label(form.startDate) }}
+            {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.startDate) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.status) }}
+            {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.status) }}
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-end mt-4 pt-3 border-top border-secondary border-opacity-25">
+    <a href="{{ path('app_project_index') }}" class="btn btn-outline-secondary me-2">Annuler</a>
+    <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+</div>
+{{ form_end(form) }}

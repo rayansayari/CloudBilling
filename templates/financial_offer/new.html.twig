@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Importer une offre - CloudBill{% endblock %}
+{% block page_title %}Importer une offre financière{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="glass-card p-5">
+            <div class="text-center mb-4">
+                <div class="rounded-circle bg-accent bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-file-upload text-accent fs-1"></i>
+                </div>
+                <h4 class="fw-bold">Importer pour {{ project.soNumber }}</h4>
+                <p class="text-muted">Projet : {{ project.name }}</p>
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'mt-4'}}) }}
+                <div class="mb-4">
+                    {{ form_label(form.effectiveDate) }}
+                    {{ form_widget(form.effectiveDate, {'attr': {'class': 'form-control bg-dark text-light'}}) }}
+                    <div class="form-text text-muted small"><i class="fas fa-info-circle"></i> Date à partir de laquelle cette offre sera appliquée pour la facturation.</div>
+                </div>
+
+                <div class="mb-4">
+                    {{ form_label(form.file) }}
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-muted"><i class="fas fa-file-excel"></i> / <i class="fas fa-file-pdf"></i></span>
+                        {{ form_widget(form.file, {'attr': {'class': 'form-control border-start-0 ps-0'}}) }}
+                    </div>
+                    {{ form_errors(form.file) }}
+                    <div class="form-text text-muted small mt-2">
+                        Formats supportés : <strong>.xlsx, .xls, .csv, .pdf</strong> (Taille max : 10 Mo)
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top border-secondary border-opacity-25">
+                    <a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn btn-outline-secondary px-4">Annuler</a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="fas fa-search me-2"></i> Analyser le fichier
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+        
+        <div class="alert alert-info bg-info bg-opacity-10 text-info border-0 mt-4 d-flex align-items-start">
+            <i class="fas fa-magic fs-4 me-3 mt-1"></i>
+            <div>
+                <h6 class="fw-bold mb-1">Comment ça marche ?</h6>
+                <p class="small mb-0">L'application va lire votre fichier et extraire automatiquement les ressources, les prix unitaires, les quantités et les unités. Vous pourrez vérifier le résultat avant validation finale.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

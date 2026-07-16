@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ company.name }} - CloudBill{% endblock %}
+{% block page_title %}Détails de la Société{% endblock %}
+
+{% block body %}
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h4 class="fw-bold mb-0">{{ company.name }}</h4>
+                <div>
+                    <a href="{{ path('app_company_edit', {'id': company.id}) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+                </div>
+            </div>
+            
+            <p class="text-muted small mb-4">{{ company.description ?: 'Aucune description.' }}</p>
+            
+            <ul class="list-unstyled mb-0">
+                <li class="mb-3 d-flex align-items-center">
+                    <div class="bg-secondary bg-opacity-25 rounded p-2 me-3 text-center" style="width: 35px;"><i class="fas fa-envelope text-white"></i></div>
+                    <div>
+                        <small class="text-muted d-block lh-1">Email</small>
+                        <span class="fw-medium">{{ company.email ?: '-' }}</span>
+                    </div>
+                </li>
+                <li class="mb-3 d-flex align-items-center">
+                    <div class="bg-secondary bg-opacity-25 rounded p-2 me-3 text-center" style="width: 35px;"><i class="fas fa-phone text-white"></i></div>
+                    <div>
+                        <small class="text-muted d-block lh-1">Téléphone</small>
+                        <span class="fw-medium">{{ company.phone ?: '-' }}</span>
+                    </div>
+                </li>
+                <li class="d-flex align-items-center">
+                    <div class="bg-secondary bg-opacity-25 rounded p-2 me-3 text-center" style="width: 35px;"><i class="fas fa-map-marker-alt text-white"></i></div>
+                    <div>
+                        <small class="text-muted d-block lh-1">Adresse</small>
+                        <span class="fw-medium">{{ company.address ?: '-' }}</span>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                <small class="text-muted">Ajoutée le {{ company.createdAt|date('d/m/Y') }}</small>
+                
+                <form method="post" action="{{ path('app_company_delete', {'id': company.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette société ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ company.id) }}">
+                    <button class="btn btn-sm btn-outline-danger border-0"><i class="fas fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-semibold mb-0"><i class="fas fa-project-diagram text-accent me-2"></i> Projets (SO) de la société</h5>
+                <a href="{{ path('app_project_new', {'company': company.id}) }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus me-1"></i> Ajouter un projet
+                </a>
+            </div>
+            
+            <table class="table table-dark table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>SO</th>
+                        <th>Nom du projet</th>
+                        <th>Statut</th>
+                        <th>Date de début</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in company.projects %}
+                        <tr>
+                            <td class="fw-bold">{{ project.soNumber }}</td>
+                            <td>{{ project.name }}</td>
+                            <td>
+                                {% set badgeColor = project.status == 'Actif' ? 'success' : (project.status == 'En pause' ? 'warning' : 'secondary') %}
+                                <span class="badge bg-{{ badgeColor }} bg-opacity-25 text-{{ badgeColor }} border border-{{ badgeColor }} border-opacity-25">{{ project.status }}</span>
+                            </td>
+                            <td>{{ project.startDate|date('d/m/Y') }}</td>
+                            <td class="text-end">
+                                <a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn btn-sm btn-outline-light border-0"><i class="fas fa-eye text-info"></i></a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted fst-italic">
+                                Aucun projet n'a encore été créé pour cette société.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

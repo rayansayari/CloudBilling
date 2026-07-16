@@ -1,0 +1,125 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Facture Consolidée - CloudBill{% endblock %}
+{% block page_title %}Facture Consolidée{% endblock %}
+
+{% block body %}
+<div class="glass-card mb-4 p-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label text-muted">Société</label>
+            <select name="company" class="form-select bg-dark text-light border-secondary" required>
+                <option value="">-- Sélectionner une société --</option>
+                {% for company in companies %}
+                    <option value="{{ company.id }}" {% if selectedCompany and selectedCompany.id == company.id %}selected{% endif %}>
+                        {{ company.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label text-muted">Mois</label>
+            <select name="month" class="form-select bg-dark text-light border-secondary">
+                {% for num, name in months %}
+                    <option value="{{ num }}" {% if selectedMonth == num %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label text-muted">Année</label>
+            <input type="number" name="year" value="{{ selectedYear }}" class="form-control bg-dark text-light border-secondary" min="2020" max="2050">
+        </div>
+        <div class="col-md-3 d-grid">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i> Générer l'aperçu
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if selectedCompany %}
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
+        <h4 class="mb-0">
+            Aperçu Consolidé - {{ selectedCompany.name }} 
+            <span class="badge bg-secondary ms-2">{{ months[selectedMonth] }} {{ selectedYear }}</span>
+        </h4>
+        
+        {% if consolidatedData|length > 0 %}
+            <a href="{{ path('app_consolidated_export_pdf', {'company': selectedCompany.id, 'month': selectedMonth, 'year': selectedYear}) }}" target="_blank" class="btn btn-danger">
+                <i class="fas fa-file-pdf me-2"></i> Exporter en PDF
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="glass-card overflow-hidden">
+        <table class="table table-dark table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Projet (SO)</th>
+                    <th>Référence Facture</th>
+                    <th class="text-end">Total HT</th>
+                    <th class="text-end">TVA (20%)</th>
+                    <th class="text-end">Total TTC</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for data in consolidatedData %}
+                {% set project = data.project %}
+                {% set invoice = data.invoice %}
+                <tr>
+                    <td class="align-middle fw-medium">
+                        {{ project.name }}
+                        <small class="text-muted d-block">{{ project.soNumber }}</small>
+                    </td>
+                    <td class="align-middle">
+                        {% if invoice %}
+                            <a href="{{ path('app_invoice_edit', {'project_id': project.id, 'id': invoice.id}) }}" class="text-info text-decoration-none">
+                                {{ invoice.reference }}
+                            </a>
+                            {% if not invoice.isValidated %}
+                                <span class="badge bg-warning text-dark ms-2">Brouillon</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted fst-italic">Aucune facture générée</span>
+                            <a href="{{ path('app_invoice_generate', {'project_id': project.id, 'month': selectedMonth, 'year': selectedYear}) }}" class="btn btn-sm btn-outline-primary ms-2">
+                                Générer
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td class="align-middle text-end text-light">
+                        {% if invoice %}{{ invoice.totalHT|number_format(2, ',', ' ') }} €{% else %}-{% endif %}
+                    </td>
+                    <td class="align-middle text-end text-light">
+                        {% if invoice %}{{ invoice.totalTVA|number_format(2, ',', ' ') }} €{% else %}-{% endif %}
+                    </td>
+                    <td class="align-middle text-end fw-bold text-success">
+                        {% if invoice %}{{ invoice.totalTTC|number_format(2, ',', ' ') }} €{% else %}-{% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        Aucun projet trouvé pour cette société.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            {% if consolidatedData|length > 0 %}
+            <tfoot class="table-group-divider border-top-2 border-primary">
+                <tr class="table-active fs-5">
+                    <td colspan="2" class="text-end fw-bold">TOTAL GLOBAL</td>
+                    <td class="text-end fw-bold">{{ grandTotalHT|number_format(2, ',', ' ') }} €</td>
+                    <td class="text-end fw-bold">{{ grandTotalTVA|number_format(2, ',', ' ') }} €</td>
+                    <td class="text-end fw-bold text-accent">{{ grandTotalTTC|number_format(2, ',', ' ') }} €</td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-layer-group text-muted fs-1 mb-3 opacity-50"></i>
+        <h5 class="text-muted">Sélectionnez une société pour voir la facture consolidée</h5>
+    </div>
+{% endif %}
+{% endblock %}

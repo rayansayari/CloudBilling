@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - CloudBill{% endblock %}
+
+{% block login_body %}
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center" style="background: radial-gradient(circle at top right, #1e1b4b, #0f172a);">
+    
+    <!-- Background decorations -->
+    <div class="position-absolute top-0 start-0 w-100 h-100 overflow-hidden" style="z-index: 0; pointer-events: none;">
+        <div class="position-absolute rounded-circle" style="width: 400px; height: 400px; background: rgba(99, 102, 241, 0.1); filter: blur(50px); top: -100px; left: -100px;"></div>
+        <div class="position-absolute rounded-circle" style="width: 300px; height: 300px; background: rgba(16, 185, 129, 0.1); filter: blur(50px); bottom: -50px; right: 10%;"></div>
+    </div>
+
+    <div class="glass-card p-5" style="width: 100%; max-width: 420px; z-index: 1;">
+        
+        <div class="text-center mb-4">
+            <i class="fas fa-cloud text-accent mb-3" style="font-size: 3rem;"></i>
+            <h3 class="fw-bold mb-1">CloudBill</h3>
+            <p class="text-muted small">Automatisation de la facturation Cloud</p>
+        </div>
+
+        <form method="post">
+            {% if error %}
+                <div class="alert alert-danger bg-danger bg-opacity-10 text-danger border-0 small py-2 px-3 rounded-3 mb-3">
+                    <i class="fas fa-exclamation-circle me-2"></i> {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="inputEmail" class="form-label text-muted small fw-medium">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-muted">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                    <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" class="form-control border-start-0 ps-0" autocomplete="email" required autofocus placeholder="admin@cloud.com">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="inputPassword" class="form-label text-muted small fw-medium">Mot de passe</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-muted">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" name="_password" id="inputPassword" class="form-control border-start-0 ps-0" autocomplete="current-password" required placeholder="••••••••">
+                </div>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary py-2 d-flex align-items-center justify-content-center" type="submit">
+                    Se connecter <i class="fas fa-arrow-right ms-2 fs-7"></i>
+                </button>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="#" class="text-muted text-decoration-none small hover-accent transition">Mot de passe oublié ?</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

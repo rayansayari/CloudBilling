@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture Consolidée - {{ company.name }}</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #333; }
+        .header { margin-bottom: 30px; border-bottom: 2px solid #6366f1; padding-bottom: 10px; }
+        .title { font-size: 24px; font-weight: bold; color: #6366f1; text-transform: uppercase; }
+        .subtitle { font-size: 14px; color: #666; margin-top: 5px; }
+        .details-container { width: 100%; margin-bottom: 40px; }
+        .details-container td { vertical-align: top; }
+        .box { border: 1px solid #ddd; padding: 15px; border-radius: 4px; background: #f9f9f9; }
+        .box-title { font-weight: bold; margin-bottom: 10px; color: #444; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        table.items { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        table.items th { background-color: #6366f1; color: white; padding: 10px; text-align: left; }
+        table.items td { border-bottom: 1px solid #eee; padding: 10px; }
+        table.items th.right, table.items td.right { text-align: right; }
+        .totals-container { width: 100%; margin-top: 20px; }
+        .totals { width: 40%; float: right; border: 1px solid #ddd; border-radius: 4px; }
+        .totals td { padding: 8px 15px; }
+        .totals tr:not(:last-child) td { border-bottom: 1px solid #eee; }
+        .totals .grand-total { font-weight: bold; font-size: 16px; background-color: #f1f1f1; }
+        .footer { position: absolute; bottom: 30px; width: 100%; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+        .clearfix::after { content: ""; clear: both; display: table; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table width="100%">
+            <tr>
+                <td>
+                    <div class="title">FACTURE CONSOLIDÉE</div>
+                    <div class="subtitle">Période : {{ "%02d/%04d"|format(month, year) }}</div>
+                </td>
+                <td style="text-align: right;">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNjM2NmYxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTE3LjUgMTlDMjAuMDMwMyAxOSAyMiAxNi45Njk3IDIyIDE0LjVDMjIgMTIuNDAxOSAxOS41IDEwLjUgMTcgMTAuNUMxNyAxMC41IDE3IDcgMTIgN0M3IDcgNyAxMC41IDcgMTAuNUM0LjUgMTAuNSAyIDEyLjQwMTkgMiAxNC41QzIgMTYuOTY5NyAzLjk2OTcyIDE5IDYuNSAxOUgxNy41WiIvPjwvc3ZnPg==" width="40" height="40" style="vertical-align: middle;">
+                    <span style="font-size: 20px; font-weight: bold; color: #333; vertical-align: middle;">CloudBill</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="details-container">
+        <tr>
+            <td width="50%" style="padding-right: 15px;">
+                <div class="box">
+                    <div class="box-title">Client</div>
+                    <strong>{{ company.name }}</strong><br>
+                    {% if company.address %}{{ company.address|nl2br }}<br>{% endif %}
+                    {% if company.siret %}SIRET : {{ company.siret }}<br>{% endif %}
+                    {% if company.tvaNumber %}TVA : {{ company.tvaNumber }}{% endif %}
+                </div>
+            </td>
+            <td width="50%" style="padding-left: 15px;">
+                <div class="box">
+                    <div class="box-title">Informations de facturation</div>
+                    Date d'émission : {{ "now"|date("d/m/Y") }}<br>
+                    Mois facturé : {{ "%02d/%04d"|format(month, year) }}<br>
+                    Nombre de projets : {{ consolidatedData|length }}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th>Projet (SO)</th>
+                <th>Référence Facture</th>
+                <th class="right">Total HT</th>
+                <th class="right">TVA (20%)</th>
+                <th class="right">Total TTC</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in consolidatedData %}
+                {% set project = data.project %}
+                {% set invoice = data.invoice %}
+                {% if invoice %}
+                <tr>
+                    <td>
+                        <strong>{{ project.name }}</strong><br>
+                        <span style="color: #666; font-size: 11px;">{{ project.soNumber }}</span>
+                    </td>
+                    <td>{{ invoice.reference }}</td>
+                    <td class="right">{{ invoice.totalHT|number_format(2, ',', ' ') }} €</td>
+                    <td class="right">{{ invoice.totalTVA|number_format(2, ',', ' ') }} €</td>
+                    <td class="right"><strong>{{ invoice.totalTTC|number_format(2, ',', ' ') }} €</strong></td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals-container clearfix">
+        <table class="totals">
+            <tr>
+                <td>Total Global HT</td>
+                <td style="text-align: right;">{{ grandTotalHT|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            <tr>
+                <td>TVA (20%)</td>
+                <td style="text-align: right;">{{ grandTotalTVA|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            <tr class="grand-total">
+                <td>Total Global TTC</td>
+                <td style="text-align: right; color: #6366f1;">{{ grandTotalTTC|number_format(2, ',', ' ') }} €</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        Document généré par CloudBill - {{ "now"|date("d/m/Y H:i") }}<br>
+        En cas de retard de paiement, une pénalité de 3 fois le taux d'intérêt légal sera appliquée.
+    </div>
+</body>
+</html>

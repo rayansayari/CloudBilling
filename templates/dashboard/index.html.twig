@@ -1,0 +1,199 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - CloudBill{% endblock %}
+{% block page_title %}Vue d'ensemble{% endblock %}
+
+{% block body %}
+<div class="row g-4 mb-4">
+    <!-- KPI 1 -->
+    <div class="col-12 col-md-4">
+        <div class="glass-card p-4 h-100 d-flex align-items-center">
+            <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width:55px;height:55px;background:rgba(99,102,241,0.15);">
+                <i class="fas fa-project-diagram fs-4" style="color:#6366f1;"></i>
+            </div>
+            <div>
+                <h6 class="text-muted mb-1 text-uppercase fw-semibold" style="font-size:0.72rem;letter-spacing:0.08em;">Projets Actifs</h6>
+                <h2 class="mb-0 fw-bold">{{ active_projects }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI 2 -->
+    <div class="col-12 col-md-4">
+        <div class="glass-card p-4 h-100 d-flex align-items-center">
+            <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width:55px;height:55px;background:rgba(245,158,11,0.15);">
+                <i class="fas fa-clock fs-4" style="color:#f59e0b;"></i>
+            </div>
+            <div>
+                <h6 class="text-muted mb-1 text-uppercase fw-semibold" style="font-size:0.72rem;letter-spacing:0.08em;">Factures en attente</h6>
+                <h2 class="mb-0 fw-bold">
+                    {{ pending_invoices }}
+                    {% if pending_invoices > 0 %}
+                        <span class="badge bg-warning text-dark ms-2" style="font-size:0.6rem;">À valider</span>
+                    {% endif %}
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI 3 -->
+    <div class="col-12 col-md-4">
+        <div class="glass-card p-4 h-100 d-flex align-items-center">
+            <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width:55px;height:55px;background:rgba(16,185,129,0.15);">
+                <i class="fas fa-coins fs-4" style="color:#10b981;"></i>
+            </div>
+            <div>
+                <h6 class="text-muted mb-1 text-uppercase fw-semibold" style="font-size:0.72rem;letter-spacing:0.08em;">Revenu Annuel (TTC)</h6>
+                <h2 class="mb-0 fw-bold">
+                    {{ total_billed|number_format(2, ',', ' ') }}
+                    <span class="fs-6 text-muted">TND</span>
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Chart -->
+    <div class="col-12 col-lg-8">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-semibold mb-0">
+                    <i class="fas fa-chart-line me-2" style="color:#6366f1;"></i>
+                    Évolution des revenus ({{ chart_year }})
+                </h5>
+                <span class="badge" style="background:rgba(99,102,241,0.2);color:#6366f1;border:1px solid rgba(99,102,241,0.3);">Factures validées</span>
+            </div>
+            <div style="height: 280px; position: relative;">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-12 col-lg-4">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-semibold mb-4"><i class="fas fa-bolt me-2 text-warning"></i>Actions Rapides</h5>
+            <div class="d-grid gap-3">
+                <a href="{{ path('app_project_new') }}" class="btn text-start p-3 d-flex align-items-center" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;">
+                    <div class="rounded p-2 me-3" style="background:rgba(99,102,241,0.15);">
+                        <i class="fas fa-plus" style="color:#6366f1;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-white">Nouveau Projet SO</h6>
+                        <small class="text-muted">Créer un nouveau projet client</small>
+                    </div>
+                </a>
+
+                <a href="{{ path('app_invoice_history') }}" class="btn text-start p-3 d-flex align-items-center" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;">
+                    <div class="rounded p-2 me-3" style="background:rgba(16,185,129,0.15);">
+                        <i class="fas fa-file-invoice" style="color:#10b981;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-white">Historique Factures</h6>
+                        <small class="text-muted">Consulter toutes les factures</small>
+                    </div>
+                </a>
+
+                <a href="{{ path('app_consolidated_index') }}" class="btn text-start p-3 d-flex align-items-center" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;">
+                    <div class="rounded p-2 me-3" style="background:rgba(245,158,11,0.15);">
+                        <i class="fas fa-layer-group" style="color:#f59e0b;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-white">Facture Consolidée</h6>
+                        <small class="text-muted">Grouper les SO d'une société</small>
+                    </div>
+                </a>
+
+                {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_audit_log') }}" class="btn text-start p-3 d-flex align-items-center" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;">
+                    <div class="rounded p-2 me-3" style="background:rgba(239,68,68,0.15);">
+                        <i class="fas fa-clipboard-list" style="color:#ef4444;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-white">Journal d'Audit</h6>
+                        <small class="text-muted">Traçabilité des actions</small>
+                    </div>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+
+    const chartData = {{ chart_data|json_encode|raw }};
+    const labels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenu TTC ({{ chart_year }})',
+                data: chartData,
+                borderColor: '#6366f1',
+                backgroundColor: (ctx) => {
+                    const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 280);
+                    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
+                    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+                    return gradient;
+                },
+                borderWidth: 2.5,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#6366f1',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    borderColor: 'rgba(99, 102, 241, 0.3)',
+                    borderWidth: 1,
+                    titleColor: '#e2e8f0',
+                    bodyColor: '#94a3b8',
+                    padding: 12,
+                    callbacks: {
+                        label: function(ctx) {
+                            return ' ' + ctx.parsed.y.toLocaleString('fr-FR', {minimumFractionDigits: 2}) + ' TND';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.06)' },
+                    ticks: {
+                        color: '#94a3b8',
+                        callback: (val) => val.toLocaleString('fr-FR') + ' TND'
+                    },
+                    border: { color: 'transparent' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#94a3b8' },
+                    border: { color: 'transparent' }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

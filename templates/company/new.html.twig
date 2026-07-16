@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Société - CloudBill{% endblock %}
+{% block page_title %}Ajouter une Société{% endblock %}
+
+{% block body %}
+<div class="glass-card p-4">
+    <h5 class="fw-semibold mb-4"><i class="fas fa-building me-2 text-accent"></i> Informations de la société</h5>
+    
+    {{ include('company/_form.html.twig') }}
+</div>
+{% endblock %}

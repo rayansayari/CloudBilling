@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Utilisateurs - CloudBill{% endblock %}
+{% block page_title %}Utilisateurs{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <p class="text-muted mb-0">Gérez les accès et les rôles des collaborateurs.</p>
+    <a href="{{ path('app_admin_user_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i> Nouvel utilisateur
+    </a>
+</div>
+
+<div class="glass-card overflow-hidden">
+    <table class="table table-dark table-hover mb-0">
+        <thead class="table-dark">
+            <tr>
+                <th>Nom complet</th>
+                <th>Email</th>
+                <th>Rôles</th>
+                <th>Date de création</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for user in pagination %}
+            <tr>
+                <td class="align-middle fw-medium">
+                    <img src="https://ui-avatars.com/api/?name={{ user.fullName|url_encode }}&background=6366f1&color=fff" alt="" width="24" height="24" class="rounded-circle me-2">
+                    {{ user.fullName }}
+                </td>
+                <td class="align-middle">{{ user.email }}</td>
+                <td class="align-middle">
+                    {% for role in user.roles %}
+                        {% if role == 'ROLE_ADMIN' %}
+                            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 me-1">Admin</span>
+                        {% elseif role == 'ROLE_CONSULTANT' %}
+                            <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 me-1">Consultant</span>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td class="align-middle text-muted">{{ user.createdAt|date('d/m/Y') }}</td>
+                <td class="align-middle text-end">
+                    <a href="{{ path('app_admin_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    {% if user != app.user %}
+                    <form method="post" action="{{ path('app_admin_user_delete', {'id': user.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                        <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5" class="text-center py-4 text-muted">Aucun utilisateur trouvé.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="d-flex justify-content-center mt-4">
+    {{ knp_pagination_render(pagination) }}
+</div>
+{% endblock %}

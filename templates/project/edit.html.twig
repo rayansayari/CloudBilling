@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ project.soNumber }} - CloudBill{% endblock %}
+{% block page_title %}Modifier le Projet{% endblock %}
+
+{% block body %}
+<div class="glass-card p-4">
+    <h5 class="fw-semibold mb-4"><i class="fas fa-project-diagram me-2 text-accent"></i> Modifier : {{ project.soNumber }} ({{ project.name }})</h5>
+    
+    {{ include('project/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+</div>
+{% endblock %}

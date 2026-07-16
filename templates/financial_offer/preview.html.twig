@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Prévisualisation de l'offre - CloudBill{% endblock %}
+{% block page_title %}Vérification des données extraites{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h4 class="fw-bold mb-1">Prévisualisation de l'import</h4>
+        <p class="text-muted mb-0">Projet : <span class="fw-medium text-light">{{ project.soNumber }}</span> — Fichier : <span class="fw-medium text-light">{{ offer.fileName }}</span></p>
+    </div>
+    <div>
+        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 fs-6 px-3 py-2">
+            Version {{ offer.version }}
+        </span>
+    </div>
+</div>
+
+<div class="glass-card overflow-hidden">
+    <div class="p-4 border-bottom border-secondary border-opacity-25 bg-white bg-opacity-5">
+        <h6 class="fw-semibold text-accent mb-0"><i class="fas fa-list-check me-2"></i> {{ lines|length }} ressource(s) détectée(s)</h6>
+    </div>
+    
+    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+        <table class="table table-dark table-hover mb-0">
+            <thead class="table-dark position-sticky top-0 shadow-sm" style="z-index: 1;">
+                <tr>
+                    <th>#</th>
+                    <th>Ressource / Désignation</th>
+                    <th>Type de Service</th>
+                    <th>Unité</th>
+                    <th>Quantité (Défaut)</th>
+                    <th class="text-end">Prix Unitaire</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, line in lines %}
+                    <tr>
+                        <td class="text-muted">{{ key + 1 }}</td>
+                        <td class="fw-semibold">{{ line.resourceName }}</td>
+                        <td>{{ line.serviceType|default('<span class="text-muted fst-italic">Non détecté</span>')|raw }}</td>
+                        <td><span class="badge bg-secondary">{{ line.unit }}</span></td>
+                        <td>{{ line.quantity|default('-') }}</td>
+                        <td class="text-end fw-bold text-accent">{{ line.unitPrice }} TND</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-warning">
+                            <i class="fas fa-exclamation-triangle fs-2 mb-3 d-block"></i>
+                            Aucune donnée n'a pu être extraite correctement. Vérifiez le format du fichier.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <a href="{{ path('app_financial_offer_new', {'project_id': project.id}) }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i> Choisir un autre fichier
+    </a>
+    
+    {% if lines|length > 0 %}
+        <form method="post" action="{{ path('app_financial_offer_preview', {'project_id': project.id}) }}">
+            <button type="submit" class="btn btn-success px-5 py-2 fw-semibold shadow">
+                <i class="fas fa-check-circle me-2"></i> Valider et Activer cette offre
+            </button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Facture {{ invoice.reference }}</title>
+    <style>
+        body {
+            font-family: 'DejaVu Sans', sans-serif;
+            color: #333;
+            font-size: 12px;
+        }
+        .header {
+            width: 100%;
+            margin-bottom: 40px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        .company-details {
+            float: right;
+            text-align: right;
+        }
+        .invoice-details {
+            margin-bottom: 40px;
+        }
+        .invoice-details h2 {
+            color: #6366f1;
+            margin-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8fafc;
+            font-weight: bold;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .totals {
+            width: 40%;
+            float: right;
+        }
+        .totals table {
+            border: none;
+        }
+        .totals th, .totals td {
+            border: none;
+            border-bottom: 1px solid #eee;
+        }
+        .totals .grand-total {
+            font-size: 16px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        .footer {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="logo">CloudBill</span>
+        <div class="company-details">
+            <strong>Client :</strong><br>
+            {{ invoice.project.company.name }}<br>
+            {{ invoice.project.company.address }}<br>
+            {{ invoice.project.company.email }}
+        </div>
+    </div>
+
+    <div class="invoice-details">
+        <h2>FACTURE N° {{ invoice.reference }}</h2>
+        <p>
+            <strong>Date d'émission :</strong> {{ invoice.validatedAt ? invoice.validatedAt|date('d/m/Y') : "now"|date('d/m/Y') }}<br>
+            <strong>Période de facturation :</strong> {{ invoice.monthName }} {{ invoice.year }}<br>
+            <strong>Projet (SO) :</strong> {{ invoice.project.soNumber }} - {{ invoice.project.name }}
+        </p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Ressource</th>
+                <th>Type</th>
+                <th class="text-center">Unité</th>
+                <th class="text-right">Quantité</th>
+                <th class="text-right">P.U (TND)</th>
+                <th class="text-right">Total (TND)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in invoice.invoiceLines %}
+                <tr>
+                    <td>{{ line.resourceName }}</td>
+                    <td>{{ line.serviceType }}</td>
+                    <td class="text-center">{{ line.unit }}</td>
+                    <td class="text-right">{{ line.consumedQuantity }}</td>
+                    <td class="text-right">{{ line.unitPrice|number_format(4, '.', ' ') }}</td>
+                    <td class="text-right">{{ line.lineTotal|number_format(4, '.', ' ') }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <th>Total HT</th>
+                <td class="text-right">{{ invoice.totalHT|number_format(4, '.', ' ') }} TND</td>
+            </tr>
+            <tr>
+                <th>TVA ({{ invoice.tvaRate }}%)</th>
+                <td class="text-right">{{ invoice.totalTVA|number_format(4, '.', ' ') }} TND</td>
+            </tr>
+            <tr class="grand-total">
+                <th>Total TTC</th>
+                <td class="text-right">{{ invoice.totalTTC|number_format(4, '.', ' ') }} TND</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        CloudBill - Automatisation de la facturation Cloud<br>
+        Document généré automatiquement le {{ "now"|date('d/m/Y H:i') }}
+    </div>
+</body>
+</html>

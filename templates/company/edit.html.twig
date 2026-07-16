@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ company.name }} - CloudBill{% endblock %}
+{% block page_title %}Modifier la Société{% endblock %}
+
+{% block body %}
+<div class="glass-card p-4">
+    <h5 class="fw-semibold mb-4"><i class="fas fa-building me-2 text-accent"></i> Modifier : {{ company.name }}</h5>
+    
+    {{ include('company/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+</div>
+{% endblock %}

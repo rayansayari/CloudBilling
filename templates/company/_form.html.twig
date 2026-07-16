@@ -1,0 +1,38 @@
+{{ form_start(form) }}
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="mb-3">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.name) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.email) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.phone) }}
+            {{ form_widget(form.phone, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.phone) }}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            {{ form_label(form.address) }}
+            {{ form_widget(form.address, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.address) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.description) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-end mt-4 pt-3 border-top border-secondary border-opacity-25">
+    <a href="{{ path('app_company_index') }}" class="btn btn-outline-secondary me-2">Annuler</a>
+    <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+</div>
+{{ form_end(form) }}
