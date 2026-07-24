@@ -1,0 +1,225 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Dashboard Admin — CloudBill{% endblock %}
+{% block page_title %}Overview{% endblock %}
+
+{% block body %}
+<div class="adm-page-header">
+    <div>
+        <h1>Dashboard Principal</h1>
+        <p>Aperçu global de l'activité financière et des actions récentes.</p>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_invoice_history') }}" class="adm-btn adm-btn-primary">
+            <i class="fas fa-file-invoice"></i> Gérer les factures
+        </a>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="adm-kpi purple">
+            <div class="adm-kpi-icon"><i class="fas fa-building"></i></div>
+            <div>
+                <div class="adm-kpi-label">Sociétés</div>
+                <div class="adm-kpi-value">{{ totalCompanies }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="adm-kpi cyan">
+            <div class="adm-kpi-icon"><i class="fas fa-project-diagram"></i></div>
+            <div>
+                <div class="adm-kpi-label">Projets Actifs</div>
+                <div class="adm-kpi-value">{{ activeProjects }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="adm-kpi green">
+            <div class="adm-kpi-icon"><i class="fas fa-coins"></i></div>
+            <div>
+                <div class="adm-kpi-label">Revenu {{ chartYear }}</div>
+                <div class="adm-kpi-value">{{ totalBilled|number_format(0, ',', ' ') }}<span class="fs-6 text-muted ms-1">TND</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="adm-kpi orange">
+            <div class="adm-kpi-icon"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="adm-kpi-label">Brouillons</div>
+                <div class="adm-kpi-value">{{ pendingInvoices }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Chart: Revenue Trend -->
+    <div class="col-12 col-xl-8">
+        <div class="adm-card h-100">
+            <div class="adm-card-header">
+                <div class="adm-card-title"><i class="fas fa-chart-line"></i> Évolution des revenus</div>
+            </div>
+            <div class="adm-card-body">
+                <div style="height: 280px; position: relative;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart: Revenue by Company (Donut) -->
+    <div class="col-12 col-xl-4">
+        <div class="adm-card h-100">
+            <div class="adm-card-header">
+                <div class="adm-card-title"><i class="fas fa-chart-pie"></i> Répartition par Société</div>
+            </div>
+            <div class="adm-card-body d-flex align-items-center justify-content-center">
+                {% if companyTotals|length > 0 %}
+                    <div style="height: 250px; width: 100%; position: relative;">
+                        <canvas id="companyDonut"></canvas>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-folder-open fs-2 mb-2 opacity-50"></i>
+                        <p class="mb-0">Aucune donnée facturée</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Top 5 Projects -->
+    <div class="col-12 col-lg-6">
+        <div class="adm-card h-100">
+            <div class="adm-card-header">
+                <div class="adm-card-title"><i class="fas fa-trophy"></i> Top 5 Projets (CA)</div>
+            </div>
+            <div class="p-0">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Projet</th>
+                            <th class="text-end">Montant TTC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in top5Projects %}
+                            <tr>
+                                <td class="fw-medium">{{ stat.name }}</td>
+                                <td class="text-end fw-bold" style="color:var(--adm-cyan);">{{ stat.total|number_format(2, ',', ' ') }} TND</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="2" class="text-center py-4 text-muted">Aucun projet facturé</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-12 col-lg-6">
+        <div class="adm-card h-100">
+            <div class="adm-card-header">
+                <div class="adm-card-title"><i class="fas fa-bolt"></i> Activité Récente</div>
+                <a href="{{ path('app_audit_log') }}" class="adm-btn adm-btn-sm adm-btn-primary">Voir tout</a>
+            </div>
+            <div class="adm-card-body">
+                {% for log in recentLogs %}
+                    <div class="adm-activity-item">
+                        <div class="adm-activity-dot" style="background: {% if log.action == 'CREATE' %}var(--adm-green){% elseif log.action == 'UPDATE' %}var(--adm-cyan){% elseif log.action == 'DELETE' %}var(--adm-red){% else %}var(--adm-purple){% endif %}; box-shadow: 0 0 6px currentColor;"></div>
+                        <div>
+                            <div class="adm-activity-text">
+                                <span class="fw-bold" style="color:var(--adm-purple-l);">{{ log.user.fullName }}</span>
+                                {{ log.details }}
+                            </div>
+                            <div class="adm-activity-time">{{ log.createdAt|date('d/m/Y H:i') }}</div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3 text-muted">Aucune activité récente</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.font.family = 'Inter, sans-serif';
+
+    // Revenue Line Chart
+    const ctxRev = document.getElementById('revenueChart');
+    if (ctxRev) {
+        new Chart(ctxRev.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+                datasets: [{
+                    label: 'Revenu',
+                    data: {{ chartRevenue|json_encode|raw }},
+                    borderColor: '#7c3aed',
+                    backgroundColor: (ctx) => {
+                        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                        gradient.addColorStop(0, 'rgba(124,58,237, 0.4)');
+                        gradient.addColorStop(1, 'rgba(124,58,237, 0.0)');
+                        return gradient;
+                    },
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#030710',
+                    pointBorderColor: '#7c3aed',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, border: { display: false } },
+                    x: { grid: { display: false }, border: { display: false } }
+                }
+            }
+        });
+    }
+
+    // Company Donut Chart
+    const ctxDonut = document.getElementById('companyDonut');
+    if (ctxDonut && {{ companyTotals|length }} > 0) {
+        new Chart(ctxDonut.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: {{ companyNames|json_encode|raw }},
+                datasets: [{
+                    data: {{ companyTotals|json_encode|raw }},
+                    backgroundColor: [
+                        '#7c3aed', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, padding: 15 } }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

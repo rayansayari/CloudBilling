@@ -1,82 +1,97 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
-{% block title %}Journal d'Audit - CloudBill{% endblock %}
-{% block page_title %}Journal des Actions{% endblock %}
+{% block title %}Journal d'Audit — Admin{% endblock %}
+{% block page_title %}Audit Log{% endblock %}
+{% block breadcrumb %}
+    <span class="sep">/</span> <span class="current">Audit Log</span>
+{% endblock %}
 
 {% block body %}
-<div class="glass-card mb-4 p-3">
-    <form method="get" class="row g-3">
-        <div class="col-md-3">
-            <select name="action" class="form-select bg-dark text-light border-secondary">
-                <option value="">-- Toutes les actions --</option>
-                {% for a in actions %}
-                    <option value="{{ a }}" {% if currentAction == a %}selected{% endif %}>{{ a }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-3">
-            <select name="entity" class="form-select bg-dark text-light border-secondary">
-                <option value="">-- Toutes les entités --</option>
-                {% for e in entities %}
-                    <option value="{{ e }}" {% if currentEntity == e %}selected{% endif %}>{{ e }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-4">
-            <input type="text" name="user" value="{{ currentUser }}" class="form-control bg-dark text-light border-secondary" placeholder="Rechercher un utilisateur...">
-        </div>
-        <div class="col-md-2 d-grid">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-filter me-2"></i> Filtrer</button>
-        </div>
-    </form>
+<div class="adm-page-header">
+    <div>
+        <h1>Journal d'Audit</h1>
+        <p>Traçabilité complète des actions effectuées sur le système.</p>
+    </div>
 </div>
 
-<div class="glass-card overflow-hidden">
-    <table class="table table-dark table-hover mb-0 text-sm">
-        <thead class="table-dark">
-            <tr>
-                <th>Date / Heure</th>
-                <th>Utilisateur</th>
-                <th>Action</th>
-                <th>Entité / ID</th>
-                <th>Détails</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for log in pagination %}
-            <tr>
-                <td class="text-muted"><i class="far fa-clock me-1"></i> {{ log.createdAt|date('d/m/Y H:i:s') }}</td>
-                <td class="fw-medium">
-                    {% if log.user %}
-                        {{ log.user.fullName }} <small class="text-muted d-block">{{ log.user.email }}</small>
-                    {% else %}
-                        <span class="fst-italic text-muted">Système</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if log.action == 'CREATE' %}<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">Création</span>
-                    {% elseif log.action == 'UPDATE' %}<span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25">Modification</span>
-                    {% elseif log.action == 'DELETE' %}<span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25">Suppression</span>
-                    {% elseif log.action == 'VALIDATE' %}<span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25">Validation</span>
-                    {% elseif log.action == 'IMPORT_OFFER' %}<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25">Import Offre</span>
-                    {% else %}<span class="badge bg-secondary">{{ log.action }}</span>{% endif %}
-                </td>
-                <td>
-                    <span class="text-light">{{ log.entityType }}</span>
-                    {% if log.entityId %}<span class="badge bg-secondary ms-1">#{{ log.entityId }}</span>{% endif %}
-                </td>
-                <td><small class="text-muted">{{ log.details|default('-') }}</small></td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5" class="text-center py-4 text-muted">Aucun log trouvé.</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<div class="adm-card mb-4">
+    <div class="adm-card-body pb-0">
+        <form method="get" class="row g-2 align-items-end mb-3">
+            <div class="col-md-3">
+                <label class="adm-form-label">Action</label>
+                <select name="action" class="adm-form-control adm-form-select">
+                    <option value="">Toutes les actions</option>
+                    {% for act in actions %}
+                        <option value="{{ act }}" {% if currentAction == act %}selected{% endif %}>{{ act }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="adm-form-label">Entité</label>
+                <select name="entity" class="adm-form-control adm-form-select">
+                    <option value="">Toutes les entités</option>
+                    {% for ent in entities %}
+                        <option value="{{ ent }}" {% if currentEntity == ent %}selected{% endif %}>{{ ent }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="adm-form-label">Utilisateur</label>
+                <input type="text" name="user" value="{{ currentUser }}" class="adm-form-control" placeholder="Nom ou email...">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="adm-btn adm-btn-primary w-100 justify-content-center">Filtrer</button>
+            </div>
+        </form>
+    </div>
 </div>
 
-<div class="d-flex justify-content-center mt-4">
+<div class="adm-card">
+    <div class="p-0">
+        <table class="adm-table">
+            <thead>
+                <tr>
+                    <th>Date / Heure</th>
+                    <th>Utilisateur</th>
+                    <th>Action</th>
+                    <th>Entité</th>
+                    <th>Détails</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in pagination %}
+                    <tr>
+                        <td class="text-muted" style="white-space:nowrap;">{{ log.createdAt|date('d/m/Y H:i:s') }}</td>
+                        <td class="fw-bold" style="color:var(--adm-cyan);">{{ log.user ? log.user.fullName : 'Système' }}</td>
+                        <td>
+                            {% if log.action == 'CREATE' %}
+                                <span class="adm-badge green">CREATE</span>
+                            {% elseif log.action == 'UPDATE' %}
+                                <span class="adm-badge cyan">UPDATE</span>
+                            {% elseif log.action == 'DELETE' %}
+                                <span class="adm-badge red">DELETE</span>
+                            {% else %}
+                                <span class="adm-badge purple">{{ log.action }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted">{{ log.entityType }} <span style="opacity:0.5;">#{{ log.entityId }}</span></td>
+                        <td>
+                            <div style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ log.details }}">
+                                {{ log.details }}
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Aucun log trouvé.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="adm-pagination">
     {{ knp_pagination_render(pagination) }}
 </div>
 {% endblock %}

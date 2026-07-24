@@ -1,0 +1,60 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}{{ title }} — Admin{% endblock %}
+{% block page_title %}Sociétés{% endblock %}
+{% block breadcrumb %}
+    <span class="sep">/</span> <a href="{{ path('app_admin_company_index') }}">Sociétés</a>
+    <span class="sep">/</span> <span class="current">{{ company.id ? 'Éditer' : 'Nouvelle' }}</span>
+{% endblock %}
+
+{% block body %}
+<div class="adm-page-header">
+    <div>
+        <h1>{{ title }}</h1>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_company_index') }}" class="adm-btn adm-btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+</div>
+
+<div class="adm-card" style="max-width: 600px;">
+    <div class="adm-card-header">
+        <div class="adm-card-title"><i class="fas fa-building"></i> Informations Société</div>
+    </div>
+    <div class="adm-card-body">
+        {{ form_start(form) }}
+            <div class="mb-3">
+                <label class="adm-form-label">Nom de la société</label>
+                {{ form_widget(form.name, {'attr': {'class': 'adm-form-control'}}) }}
+                <div class="text-danger mt-1" style="font-size:0.7rem;">{{ form_errors(form.name) }}</div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="adm-form-label">Email de contact</label>
+                {{ form_widget(form.email, {'attr': {'class': 'adm-form-control'}}) }}
+            </div>
+            
+            <div class="mb-3">
+                <label class="adm-form-label">Téléphone</label>
+                {{ form_widget(form.phone, {'attr': {'class': 'adm-form-control'}}) }}
+            </div>
+            
+            <div class="mb-3">
+                <label class="adm-form-label">Adresse</label>
+                {{ form_widget(form.address, {'attr': {'class': 'adm-form-control'}}) }}
+            </div>
+            
+            <div class="mb-4">
+                <label class="adm-form-label">Description / Infos</label>
+                {{ form_widget(form.description, {'attr': {'class': 'adm-form-control', 'rows': '3'}}) }}
+            </div>
+            
+            <button class="adm-btn adm-btn-primary w-100 justify-content-center py-2" style="font-size:0.85rem;">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

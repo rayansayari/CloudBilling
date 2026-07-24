@@ -3,12 +3,126 @@
 {% block title %}Sociétés - CloudBill{% endblock %}
 {% block page_title %}Gestion des Sociétés{% endblock %}
 
+{% block stylesheets %}
+<style>
+/* CSS Spécifique pour les Cartes Sociétés (Front Office) */
+.company-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.company-card {
+    background: rgba(15, 28, 54, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* La barre de couleur unique en haut */
+.company-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--card-color, var(--accent));
+    opacity: 0.8;
+}
+
+.company-card:hover {
+    transform: translateY(-4px);
+    background: rgba(20, 36, 65, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 20px var(--card-glow, rgba(26,111,212,0.1));
+}
+
+.company-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.company-avatar {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--card-color, var(--text-main));
+    flex-shrink: 0;
+}
+
+.company-info h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.company-info p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.company-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    margin-bottom: 1.25rem;
+    margin-top: auto;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(122, 144, 184, 0.7);
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.company-actions {
+    display: flex;
+    gap: 8px;
+}
+</style>
+{% endblock %}
+
 {% block body %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 animate-in">
     <form method="get" class="d-flex w-50">
         <div class="input-group">
             <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-search text-muted"></i></span>
-            <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 ps-0" placeholder="Rechercher une société (nom, email)...">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 ps-0" placeholder="Rechercher une société...">
             <button type="submit" class="btn btn-outline-secondary">Chercher</button>
         </div>
     </form>
@@ -18,52 +132,59 @@
     </a>
 </div>
 
-<div class="glass-card overflow-hidden">
-    <table class="table table-dark table-hover mb-0">
-        <thead class="table-dark">
-            <tr>
-                <th>Nom</th>
-                <th>Contact</th>
-                <th>Projets (SO)</th>
-                <th>Date d'ajout</th>
-                <th class="text-end">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for company in pagination %}
-            <tr>
-                <td class="fw-semibold">{{ company.name }}</td>
-                <td>
-                    {% if company.email %}<div class="small"><i class="fas fa-envelope text-muted me-1"></i> {{ company.email }}</div>{% endif %}
-                    {% if company.phone %}<div class="small"><i class="fas fa-phone text-muted me-1"></i> {{ company.phone }}</div>{% endif %}
-                    {% if not company.email and not company.phone %}<span class="text-muted fst-italic small">Non renseigné</span>{% endif %}
-                </td>
-                <td>
-                    <span class="badge bg-secondary">{{ company.projects|length }} projet(s)</span>
-                </td>
-                <td>{{ company.createdAt ? company.createdAt|date('d/m/Y') : '' }}</td>
-                <td class="text-end">
-                    <a href="{{ path('app_company_show', {'id': company.id}) }}" class="btn btn-sm btn-outline-light border-0" title="Détails">
-                        <i class="fas fa-eye text-info"></i>
-                    </a>
-                    <a href="{{ path('app_company_edit', {'id': company.id}) }}" class="btn btn-sm btn-outline-light border-0" title="Modifier">
-                        <i class="fas fa-edit text-warning"></i>
-                    </a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5" class="text-center py-4 text-muted">
-                    <i class="fas fa-box-open fs-3 mb-3 d-block"></i>
-                    Aucune société trouvée.
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<div class="company-grid">
+    {% for company in pagination %}
+        {# Génération d'une couleur pseudo-aléatoire basée sur le nom pour égayer les cartes #}
+        {% set colors = ['#0ea5e9', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#f43f5e'] %}
+        {% set colorIndex = company.name|length % colors|length %}
+        {% set cardColor = colors[colorIndex] %}
+        
+        <div class="company-card animate-in" style="--card-color: {{ cardColor }}; --card-glow: {{ cardColor }}20;">
+            <div class="company-header">
+                <div class="company-avatar">
+                    {{ company.name|slice(0,1)|upper }}
+                </div>
+                <div class="company-info flex-grow-1 min-w-0">
+                    <h3 class="text-truncate" title="{{ company.name }}">{{ company.name }}</h3>
+                    <p>
+                        <i class="fas fa-calendar-alt opacity-75"></i> 
+                        Ajoutée le {{ company.createdAt ? company.createdAt|date('d/m/Y') : '' }}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="company-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Projets Actifs</span>
+                    <span class="stat-value text-ns-cyan">{{ company.projects|length }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Email</span>
+                    <span class="stat-value fs-6 mt-1 text-muted text-truncate" title="{{ company.email|default('N/A') }}">{{ company.email|default('N/A') }}</span>
+                </div>
+            </div>
+            
+            <div class="company-actions">
+                <a href="{{ path('app_company_show', {'id': company.id}) }}" class="btn btn-primary flex-grow-1">
+                    <i class="fas fa-eye me-1"></i> Ouvrir
+                </a>
+                <a href="{{ path('app_project_new', {'company': company.id}) }}" class="btn btn-outline-light" title="Créer un nouveau projet pour cette société">
+                    <i class="fas fa-plus text-success"></i>
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="glass-card p-5 d-inline-block">
+                <i class="fas fa-building fs-1 text-muted mb-3 d-block"></i>
+                <h5 class="fw-semibold">Aucune société trouvée</h5>
+                <p class="text-muted mb-0">Commencez par ajouter votre premier client.</p>
+            </div>
+        </div>
+    {% endfor %}
 </div>
 
-<div class="d-flex justify-content-center mt-4">
+<div class="d-flex justify-content-center mt-5">
     {{ knp_pagination_render(pagination) }}
 </div>
 {% endblock %}

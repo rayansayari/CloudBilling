@@ -1,0 +1,73 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Gestion des Sociétés — Admin{% endblock %}
+{% block page_title %}Sociétés{% endblock %}
+{% block breadcrumb %}
+    <span class="sep">/</span> <span class="current">Sociétés</span>
+{% endblock %}
+
+{% block body %}
+<div class="adm-page-header">
+    <div>
+        <h1>Base de données Sociétés</h1>
+        <p>Gérez les informations légales et commerciales des clients.</p>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_company_new') }}" class="adm-btn adm-btn-primary">
+            <i class="fas fa-plus"></i> Nouvelle Société
+        </a>
+    </div>
+</div>
+
+<div class="adm-card">
+    <div class="p-0">
+        <table class="adm-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Société</th>
+                    <th>SIRET / Info</th>
+                    <th>Projets (SO)</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in pagination %}
+                    <tr>
+                        <td class="text-muted">#{{ company.id }}</td>
+                        <td class="fw-bold" style="color:var(--adm-cyan);">{{ company.name }}</td>
+                        <td>
+                            <div class="text-muted" style="font-size:0.7rem;">
+                                Email: {{ company.email|default('-') }}<br>
+                                Tél: {{ company.phone|default('-') }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="adm-badge purple">{{ company.projects|length }} Projets</span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ path('app_admin_company_edit', {'id': company.id}) }}" class="adm-btn adm-btn-icon adm-btn-primary" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_admin_company_delete', {'id': company.id}) }}" class="d-inline-block" onsubmit="return confirm('Attention ! Supprimer cette société supprimera TOUS ses projets et factures associées. Confirmer ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ company.id) }}">
+                                <button class="adm-btn adm-btn-icon adm-btn-danger border-0" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Aucune société trouvée.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="adm-pagination">
+    {{ knp_pagination_render(pagination) }}
+</div>
+{% endblock %}

@@ -1,24 +1,55 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
-{% block title %}Nouvel Utilisateur - CloudBill{% endblock %}
-{% block page_title %}Créer un Utilisateur{% endblock %}
+{% block title %}Nouvel Utilisateur — Admin{% endblock %}
+{% block page_title %}Utilisateurs{% endblock %}
+{% block breadcrumb %}
+    <span class="sep">/</span> <a href="{{ path('app_admin_user_index') }}">Utilisateurs</a>
+    <span class="sep">/</span> <span class="current">Nouveau</span>
+{% endblock %}
 
 {% block body %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="glass-card p-4">
-            <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-secondary border-opacity-25">
-                <div class="bg-primary bg-opacity-25 p-3 rounded-3 me-3 text-primary">
-                    <i class="fas fa-user-plus fs-4"></i>
-                </div>
-                <div>
-                    <h5 class="mb-1 text-white">Nouveau collaborateur</h5>
-                    <p class="text-muted mb-0 small">Créez un compte pour permettre l'accès à CloudBill</p>
-                </div>
-            </div>
+<div class="adm-page-header">
+    <div>
+        <h1>Nouvel Utilisateur</h1>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_user_index') }}" class="adm-btn adm-btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+</div>
 
-            {{ include('admin/user/_form.html.twig') }}
-        </div>
+<div class="adm-card" style="max-width: 600px;">
+    <div class="adm-card-header">
+        <div class="adm-card-title"><i class="fas fa-user"></i> Informations</div>
+    </div>
+    <div class="adm-card-body">
+        {{ form_start(form) }}
+            <div class="mb-3">
+                <label class="adm-form-label">Nom complet</label>
+                {{ form_widget(form.fullName, {'attr': {'class': 'adm-form-control'}}) }}
+                <div class="text-danger mt-1" style="font-size:0.7rem;">{{ form_errors(form.fullName) }}</div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="adm-form-label">Email</label>
+                {{ form_widget(form.email, {'attr': {'class': 'adm-form-control'}}) }}
+            </div>
+            
+            <div class="mb-3">
+                <label class="adm-form-label">Rôles</label>
+                {{ form_widget(form.roles, {'attr': {'class': 'adm-form-select adm-form-control'}}) }}
+            </div>
+            
+            <div class="mb-4">
+                <label class="adm-form-label">Mot de passe</label>
+                {{ form_widget(form.plainPassword, {'attr': {'class': 'adm-form-control'}}) }}
+            </div>
+            
+            <button class="adm-btn adm-btn-primary w-100 justify-content-center py-2" style="font-size:0.85rem;">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
+        {{ form_end(form) }}
     </div>
 </div>
 {% endblock %}

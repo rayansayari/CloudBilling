@@ -1,63 +1,428 @@
 {% extends 'base.html.twig' %}
+{% block title %}Connexion — CloudBill NS{% endblock %}
 
-{% block title %}Connexion - CloudBill{% endblock %}
+{% block stylesheets %}
+<style>
+/* ---- Login Page Exclusive Styles ---- */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: #050d1e;
+}
+
+/* Animated orbs */
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0;
+    animation: orbFloat 8s ease-in-out infinite;
+}
+
+.orb-1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(26, 63, 140, 0.5), transparent 70%);
+    top: -150px; left: -100px;
+    animation-delay: 0s;
+}
+
+.orb-2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.3), transparent 70%);
+    bottom: -100px; right: -100px;
+    animation-delay: 2s;
+}
+
+.orb-3 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(26, 111, 212, 0.25), transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: 4s;
+}
+
+@keyframes orbFloat {
+    0%   { opacity: 0; transform: scale(0.8) translate(0, 0); }
+    20%  { opacity: 1; }
+    50%  { transform: scale(1.1) translate(20px, -20px); }
+    80%  { opacity: 1; }
+    100% { opacity: 0; transform: scale(0.8) translate(0, 0); }
+}
+
+/* Animated grid lines */
+.grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(26, 111, 212, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26, 111, 212, 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent);
+}
+
+/* Floating particles */
+.particles { position: absolute; inset: 0; overflow: hidden; }
+.particle {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: rgba(14, 165, 233, 0.6);
+    border-radius: 50%;
+    animation: particleFly linear infinite;
+}
+
+@keyframes particleFly {
+    0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.5; }
+    100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+}
+
+/* Login card */
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(10, 20, 45, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(26, 111, 212, 0.2);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    position: relative;
+    z-index: 10;
+    animation: cardEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cardEnter {
+    from { opacity: 0; transform: translateY(30px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Card top glow line */
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.6), transparent);
+}
+
+/* Brand section */
+.login-brand {
+    text-align: center;
+    margin-bottom: 2rem;
+    animation: cardEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.login-brand .ns-logo-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px; height: 72px;
+    background: rgba(26, 111, 212, 0.1);
+    border: 1px solid rgba(26, 111, 212, 0.25);
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    position: relative;
+    animation: logoGlow 3s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(26, 111, 212, 0.2); }
+    50%       { box-shadow: 0 0 35px rgba(14, 165, 233, 0.4), 0 0 60px rgba(26, 111, 212, 0.15); }
+}
+
+.login-brand .ns-logo-wrap img { width: 48px; height: 48px; object-fit: contain; }
+
+.login-brand h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #f0f4ff;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.25rem;
+}
+
+.login-brand p {
+    font-size: 0.8rem;
+    color: rgba(122, 144, 184, 0.8);
+    margin: 0;
+}
+
+.login-brand .powered-by {
+    font-size: 0.7rem;
+    color: rgba(14, 165, 233, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.35rem;
+}
+
+/* Form groups */
+.login-form-group {
+    margin-bottom: 1.1rem;
+    animation: cardEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.login-form-group:nth-child(1) { animation-delay: 0.2s; }
+.login-form-group:nth-child(2) { animation-delay: 0.3s; }
+
+.login-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(122, 144, 184, 0.9);
+    margin-bottom: 0.45rem;
+}
+
+.login-input-wrap { position: relative; }
+
+.login-input-icon {
+    position: absolute;
+    left: 14px; top: 50%; transform: translateY(-50%);
+    color: rgba(122, 144, 184, 0.5);
+    font-size: 0.85rem;
+    pointer-events: none;
+    transition: color 0.25s;
+}
+
+.login-input {
+    width: 100%;
+    background: rgba(6, 13, 31, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f0f4ff;
+    border-radius: 12px;
+    padding: 0.7rem 1rem 0.7rem 2.7rem;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.25s;
+    outline: none;
+}
+
+.login-input:focus {
+    background: rgba(6, 13, 31, 0.95);
+    border-color: rgba(26, 111, 212, 0.6);
+    box-shadow: 0 0 0 3px rgba(26, 111, 212, 0.15);
+}
+
+.login-input:focus + .login-input-icon,
+.login-input-wrap:focus-within .login-input-icon {
+    color: rgba(14, 165, 233, 0.8);
+}
+
+.login-input::placeholder { color: rgba(122, 144, 184, 0.35); }
+
+/* Submit button */
+.login-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #1a4fa8 0%, #1a6fd4 50%, #0ea5e9 100%);
+    background-size: 200% auto;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    animation: cardEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+    letter-spacing: 0.02em;
+}
+
+.login-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.login-btn:hover {
+    background-position: right center;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(26, 111, 212, 0.5);
+}
+
+.login-btn:hover::before { opacity: 1; }
+.login-btn:active { transform: translateY(0); }
+
+/* Error */
+.login-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #f87171;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    font-size: 0.82rem;
+    margin-bottom: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Divider */
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.5rem 0 0;
+    animation: cardEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both;
+}
+
+.login-divider span {
+    font-size: 0.72rem;
+    color: rgba(122, 144, 184, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+.login-divider::before, .login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* Footer text */
+.login-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.72rem;
+    color: rgba(122, 144, 184, 0.4);
+    animation: cardEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+}
+
+.login-footer span { color: rgba(14, 165, 233, 0.7); }
+</style>
+{% endblock %}
 
 {% block login_body %}
-<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center" style="background: radial-gradient(circle at top right, #1e1b4b, #0f172a);">
-    
-    <!-- Background decorations -->
-    <div class="position-absolute top-0 start-0 w-100 h-100 overflow-hidden" style="z-index: 0; pointer-events: none;">
-        <div class="position-absolute rounded-circle" style="width: 400px; height: 400px; background: rgba(99, 102, 241, 0.1); filter: blur(50px); top: -100px; left: -100px;"></div>
-        <div class="position-absolute rounded-circle" style="width: 300px; height: 300px; background: rgba(16, 185, 129, 0.1); filter: blur(50px); bottom: -50px; right: 10%;"></div>
-    </div>
+<div class="login-page">
 
-    <div class="glass-card p-5" style="width: 100%; max-width: 420px; z-index: 1;">
-        
-        <div class="text-center mb-4">
-            <i class="fas fa-cloud text-accent mb-3" style="font-size: 3rem;"></i>
-            <h3 class="fw-bold mb-1">CloudBill</h3>
-            <p class="text-muted small">Automatisation de la facturation Cloud</p>
+    <!-- Animated background -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-lines"></div>
+
+    <!-- Floating particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Login Card -->
+    <div class="login-card">
+
+        <!-- Brand -->
+        <div class="login-brand">
+            <div class="ns-logo-wrap">
+                <img src="{{ asset('images/ns-logo.png') }}" alt="NS Logo">
+            </div>
+            <h2>CloudBill</h2>
+            <p>Gestion & Facturation des Ressources Cloud</p>
+            <div class="powered-by">by NetSolutions</div>
         </div>
 
-        <form method="post">
-            {% if error %}
-                <div class="alert alert-danger bg-danger bg-opacity-10 text-danger border-0 small py-2 px-3 rounded-3 mb-3">
-                    <i class="fas fa-exclamation-circle me-2"></i> {{ error.messageKey|trans(error.messageData, 'security') }}
-                </div>
-            {% endif %}
+        <!-- Error -->
+        {% if error %}
+            <div class="login-error">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
 
-            <div class="mb-3">
-                <label for="inputEmail" class="form-label text-muted small fw-medium">Email</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-muted">
-                        <i class="fas fa-envelope"></i>
-                    </span>
-                    <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" class="form-control border-start-0 ps-0" autocomplete="email" required autofocus placeholder="admin@cloud.com">
+        <!-- Form -->
+        <form method="post">
+            <div class="login-form-group">
+                <label class="login-label" for="inputEmail">Adresse Email</label>
+                <div class="login-input-wrap">
+                    <input
+                        type="email"
+                        value="{{ last_username }}"
+                        name="_username"
+                        id="inputEmail"
+                        class="login-input"
+                        autocomplete="email"
+                        required
+                        autofocus
+                        placeholder="votre@email.com"
+                    >
+                    <i class="fas fa-envelope login-input-icon"></i>
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label for="inputPassword" class="form-label text-muted small fw-medium">Mot de passe</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-25 text-muted">
-                        <i class="fas fa-lock"></i>
-                    </span>
-                    <input type="password" name="_password" id="inputPassword" class="form-control border-start-0 ps-0" autocomplete="current-password" required placeholder="••••••••">
+            <div class="login-form-group">
+                <label class="login-label" for="inputPassword">Mot de passe</label>
+                <div class="login-input-wrap">
+                    <input
+                        type="password"
+                        name="_password"
+                        id="inputPassword"
+                        class="login-input"
+                        autocomplete="current-password"
+                        required
+                        placeholder="••••••••"
+                    >
+                    <i class="fas fa-lock login-input-icon"></i>
                 </div>
             </div>
 
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-            <div class="d-grid gap-2">
-                <button class="btn btn-primary py-2 d-flex align-items-center justify-content-center" type="submit">
-                    Se connecter <i class="fas fa-arrow-right ms-2 fs-7"></i>
-                </button>
-            </div>
-            
-            <div class="text-center mt-4">
-                <a href="#" class="text-muted text-decoration-none small hover-accent transition">Mot de passe oublié ?</a>
-            </div>
+            <button class="login-btn mt-3" type="submit" id="loginBtn">
+                <span id="btnText"><i class="fas fa-sign-in-alt me-2"></i>Se connecter</span>
+            </button>
         </form>
+
+        <div class="login-divider">
+            <span>Accès sécurisé</span>
+        </div>
+
+        <div class="login-footer">
+            © 2026 <span>NetSolutions</span> — Application interne confidentielle
+        </div>
     </div>
 </div>
+
+<script>
+// Generate floating particles
+(function() {
+    const container = document.getElementById('particles');
+    const count = 18;
+    for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.width = (Math.random() * 3 + 1) + 'px';
+        p.style.height = p.style.width;
+        p.style.animationDuration = (Math.random() * 12 + 8) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        p.style.opacity = Math.random() * 0.6 + 0.2;
+        container.appendChild(p);
+    }
+})();
+
+// Button loading state
+document.querySelector('form').addEventListener('submit', function() {
+    const btn = document.getElementById('loginBtn');
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Connexion en cours...';
+    btn.disabled = true;
+});
+</script>
 {% endblock %}

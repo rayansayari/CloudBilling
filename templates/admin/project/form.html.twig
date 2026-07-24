@@ -1,0 +1,61 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Modifier Projet — Admin{% endblock %}
+{% block page_title %}Projets (SO){% endblock %}
+{% block breadcrumb %}
+    <span class="sep">/</span> <a href="{{ path('app_admin_project_index') }}">Projets</a>
+    <span class="sep">/</span> <span class="current">Éditer {{ project.soNumber }}</span>
+{% endblock %}
+
+{% block body %}
+<div class="adm-page-header">
+    <div>
+        <h1>Modifier : {{ project.soNumber }} - {{ project.name }}</h1>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_project_index') }}" class="adm-btn adm-btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+</div>
+
+<div class="adm-card" style="max-width: 600px;">
+    <div class="adm-card-header">
+        <div class="adm-card-title"><i class="fas fa-project-diagram"></i> Informations Projet</div>
+    </div>
+    <div class="adm-card-body">
+        {{ form_start(form) }}
+            <div class="mb-3">
+                <label class="adm-form-label">Numéro SO</label>
+                {{ form_widget(form.soNumber, {'attr': {'class': 'adm-form-control'}}) }}
+                <div class="text-danger mt-1" style="font-size:0.7rem;">{{ form_errors(form.soNumber) }}</div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="adm-form-label">Nom du Projet</label>
+                {{ form_widget(form.name, {'attr': {'class': 'adm-form-control'}}) }}
+            </div>
+            
+            <div class="mb-3">
+                <label class="adm-form-label">Société Cliente</label>
+                {{ form_widget(form.company, {'attr': {'class': 'adm-form-select adm-form-control'}}) }}
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="adm-form-label">Date de début</label>
+                    {{ form_widget(form.startDate, {'attr': {'class': 'adm-form-control'}}) }}
+                </div>
+                <div class="col-md-6 mb-4">
+                    <label class="adm-form-label">Statut</label>
+                    {{ form_widget(form.status, {'attr': {'class': 'adm-form-select adm-form-control'}}) }}
+                </div>
+            </div>
+            
+            <button class="adm-btn adm-btn-primary w-100 justify-content-center py-2" style="font-size:0.85rem;">
+                <i class="fas fa-save"></i> Mettre à jour le projet
+            </button>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

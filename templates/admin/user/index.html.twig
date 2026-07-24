@@ -1,67 +1,77 @@
-{% extends 'base.html.twig' %}
+{% extends 'base_admin.html.twig' %}
 
-{% block title %}Gestion des Utilisateurs - CloudBill{% endblock %}
+{% block title %}Gestion des Utilisateurs — Admin{% endblock %}
 {% block page_title %}Utilisateurs{% endblock %}
+{% block breadcrumb %}
+    <span class="sep">/</span> <span class="current">Utilisateurs</span>
+{% endblock %}
 
 {% block body %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <p class="text-muted mb-0">Gérez les accès et les rôles des collaborateurs.</p>
-    <a href="{{ path('app_admin_user_new') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i> Nouvel utilisateur
-    </a>
+<div class="adm-page-header">
+    <div>
+        <h1>Base de données Utilisateurs</h1>
+        <p>Gérez les accès administrateurs et consultants.</p>
+    </div>
+    <div>
+        <a href="{{ path('app_admin_user_new') }}" class="adm-btn adm-btn-primary">
+            <i class="fas fa-user-plus"></i> Nouvel Utilisateur
+        </a>
+    </div>
 </div>
 
-<div class="glass-card overflow-hidden">
-    <table class="table table-dark table-hover mb-0">
-        <thead class="table-dark">
-            <tr>
-                <th>Nom complet</th>
-                <th>Email</th>
-                <th>Rôles</th>
-                <th>Date de création</th>
-                <th class="text-end">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for user in pagination %}
-            <tr>
-                <td class="align-middle fw-medium">
-                    <img src="https://ui-avatars.com/api/?name={{ user.fullName|url_encode }}&background=6366f1&color=fff" alt="" width="24" height="24" class="rounded-circle me-2">
-                    {{ user.fullName }}
-                </td>
-                <td class="align-middle">{{ user.email }}</td>
-                <td class="align-middle">
-                    {% for role in user.roles %}
-                        {% if role == 'ROLE_ADMIN' %}
-                            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 me-1">Admin</span>
-                        {% elseif role == 'ROLE_CONSULTANT' %}
-                            <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 me-1">Consultant</span>
-                        {% endif %}
-                    {% endfor %}
-                </td>
-                <td class="align-middle text-muted">{{ user.createdAt|date('d/m/Y') }}</td>
-                <td class="align-middle text-end">
-                    <a href="{{ path('app_admin_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-outline-info">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    {% if user != app.user %}
-                    <form method="post" action="{{ path('app_admin_user_delete', {'id': user.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');" class="d-inline">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
-                        <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
-                    </form>
-                    {% endif %}
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5" class="text-center py-4 text-muted">Aucun utilisateur trouvé.</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<div class="adm-card">
+    <div class="p-0">
+        <table class="adm-table">
+            <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Créé le</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in pagination %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="https://ui-avatars.com/api/?name={{ user.fullName|url_encode }}&background=1e293b&color=0ea5e9" width="30" height="30" class="rounded-circle" alt="">
+                                <span class="fw-bold">{{ user.fullName }}</span>
+                            </div>
+                        </td>
+                        <td class="text-muted">{{ user.email }}</td>
+                        <td>
+                            {% if 'ROLE_ADMIN' in user.roles %}
+                                <span class="adm-badge purple">Admin</span>
+                            {% else %}
+                                <span class="adm-badge cyan">Consultant</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted">{{ user.createdAt|date('d/m/Y') }}</td>
+                        <td class="text-end">
+                            <a href="{{ path('app_admin_user_edit', {'id': user.id}) }}" class="adm-btn adm-btn-icon adm-btn-primary" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_admin_user_delete', {'id': user.id}) }}" class="d-inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                <button class="adm-btn adm-btn-icon adm-btn-danger border-0" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Aucun utilisateur trouvé.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="d-flex justify-content-center mt-4">
+<div class="adm-pagination">
     {{ knp_pagination_render(pagination) }}
 </div>
 {% endblock %}

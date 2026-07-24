@@ -1,0 +1,66 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}Factures — Admin{% endblock %}
+{% block page_title %}Factures{% endblock %}
+{% block breadcrumb %}
+    <span class="sep">/</span> <span class="current">Historique</span>
+{% endblock %}
+
+{% block body %}
+<div class="adm-page-header">
+    <div>
+        <h1>Historique des Factures</h1>
+        <p>Consultez toutes les factures générées dans le système.</p>
+    </div>
+</div>
+
+<div class="adm-card">
+    <div class="p-0">
+        <table class="adm-table">
+            <thead>
+                <tr>
+                    <th>Référence</th>
+                    <th>Projet (SO)</th>
+                    <th>Période</th>
+                    <th>Total TTC</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in pagination %}
+                    <tr>
+                        <td class="fw-bold" style="color:var(--adm-cyan);">{{ invoice.reference }}</td>
+                        <td>
+                            <div class="text-muted" style="font-size:0.7rem;">{{ invoice.project.company.name }}</div>
+                            <div>{{ invoice.project.soNumber }}</div>
+                        </td>
+                        <td>{{ "%02d"|format(invoice.month) }} / {{ invoice.year }}</td>
+                        <td class="fw-bold" style="color:var(--adm-purple-l);">{{ invoice.totalTTC|number_format(2, ',', ' ') }} TND</td>
+                        <td>
+                            {% if invoice.isValidated %}
+                                <span class="adm-badge green">Validée</span>
+                            {% else %}
+                                <span class="adm-badge orange">Brouillon</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('app_invoice_edit', {'id': invoice.id, 'project_id': invoice.project.id}) }}" class="adm-btn adm-btn-primary adm-btn-sm" title="Voir">
+                                <i class="fas fa-eye"></i> Voir détails
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Aucune facture trouvée.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="adm-pagination">
+    {{ knp_pagination_render(pagination) }}
+</div>
+{% endblock %}
