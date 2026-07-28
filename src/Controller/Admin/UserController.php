@@ -8,6 +8,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -42,7 +43,6 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Encode the plain password
             $user->setPassword(
                 $passwordHasher->hashPassword(
                     $user,
@@ -50,10 +50,20 @@ class UserController extends AbstractController
                 )
             );
 
+            // Sauvegarder le descripteur facial si fourni
+            $faceJson = $request->request->get('face_descriptor');
+            if ($faceJson) {
+                $descriptor = json_decode($faceJson, true);
+                if (is_array($descriptor) && count($descriptor) === 128) {
+                    $user->setFaceDescriptor($descriptor);
+                }
+            }
+
             $entityManager->persist($user);
             $entityManager->flush();
             
-            $this->addFlash('success', 'Utilisateur créé avec succès.');
+            $hasFace = $user->getFaceDescriptor() !== null;
+            $this->addFlash('success', 'Consultant créé avec succès.' . ($hasFace ? ' ✅ Visage enregistré.' : ' ⚠️ Aucun visage enregistré.'));
 
             return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -77,7 +87,16 @@ class UserController extends AbstractController
                     $passwordHasher->hashPassword($user, $plainPassword)
                 );
             }
-            
+
+            // Mise à jour du descripteur facial
+            $faceJson = $request->request->get('face_descriptor');
+            if ($faceJson) {
+                $descriptor = json_decode($faceJson, true);
+                if (is_array($descriptor) && count($descriptor) === 128) {
+                    $user->setFaceDescriptor($descriptor);
+                }
+            }
+
             $entityManager->flush();
             $this->addFlash('success', 'Utilisateur mis à jour avec succès.');
 
@@ -106,5 +125,24 @@ class UserController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_user_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * API AJAX : Enregistrer le descripteur facial d'un consultant existant
+     */
+    #[Route('/{id}/enroll-face', name: 'app_admin_user_enroll_face', methods: ['POST'])]
+    public function enrollFace(Request $request, User $user, EntityManagerInterface $em): JsonResponse
+    {
+        $data       = json_decode($request->getContent(), true);
+        $descriptor = $data['descriptor'] ?? null;
+
+        if (!$descriptor || !is_array($descriptor) || count($descriptor) !== 128) {
+            return $this->json(['success' => false, 'message' => 'Descripteur invalide.'], 400);
+        }
+
+        $user->setFaceDescriptor($descriptor);
+        $em->flush();
+
+        return $this->json(['success' => true, 'message' => 'Visage enregistré avec succès pour ' . $user->getFullName()]);
     }
 }

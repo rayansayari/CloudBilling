@@ -34,6 +34,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    /** Descripteur facial : vecteur 128D généré par face-api.js */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $faceDescriptor = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -109,6 +113,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function getFaceDescriptor(): ?array
+    {
+        return $this->faceDescriptor;
+    }
+
+    public function setFaceDescriptor(?array $faceDescriptor): static
+    {
+        $this->faceDescriptor = $faceDescriptor;
         return $this;
     }
 

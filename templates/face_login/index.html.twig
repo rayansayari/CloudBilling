@@ -1,0 +1,428 @@
+{% extends 'base.html.twig' %}
+{% block title %}Connexion par Reconnaissance Faciale — CloudBill NS{% endblock %}
+
+{% block stylesheets %}
+<style>
+.face-login-page {
+    min-height: 100vh;
+    background: #050d1e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Background orbs */
+.orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.35; pointer-events: none; }
+.orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(14,165,233,0.4), transparent 70%); top: -150px; left: -100px; animation: orbPulse 8s ease-in-out infinite; }
+.orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(99,102,241,0.3), transparent 70%); bottom: -100px; right: -100px; animation: orbPulse 8s ease-in-out infinite 3s; }
+@keyframes orbPulse { 0%,100%{transform:scale(1);opacity:0.3} 50%{transform:scale(1.1);opacity:0.5} }
+
+.face-card {
+    position: relative;
+    z-index: 10;
+    width: 480px;
+    background: rgba(8, 16, 36, 0.85);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 40px rgba(14,165,233,0.05);
+}
+
+.face-card-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.face-logo {
+    width: 52px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(14,165,233,0.4);
+    margin-bottom: 0.75rem;
+}
+
+.face-card-header h1 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 4px;
+}
+
+.face-card-header p {
+    font-size: 0.75rem;
+    color: rgba(148, 163, 184, 0.7);
+    margin: 0;
+}
+
+/* Webcam container */
+.webcam-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #030610;
+    border: 1.5px solid rgba(14, 165, 233, 0.15);
+    margin-bottom: 1.25rem;
+}
+
+#video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* miroir */
+    display: block;
+}
+
+/* Canvas overlay pour les landmarks */
+#overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    transform: scaleX(-1);
+}
+
+/* Scan frame animé */
+.scan-frame {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px; height: 200px;
+    pointer-events: none;
+    display: none;
+}
+
+.scan-frame.active { display: block; }
+
+.scan-frame::before, .scan-frame::after,
+.scan-corner-bl, .scan-corner-br {
+    content: '';
+    position: absolute;
+    width: 24px; height: 24px;
+    border-color: #0ea5e9;
+    border-style: solid;
+}
+
+.scan-frame::before { top: 0; left: 0; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+.scan-frame::after  { top: 0; right: 0; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+.scan-corner-bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+.scan-corner-br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+/* Ligne de scan */
+.scan-line {
+    position: absolute;
+    left: 8px; right: 8px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #0ea5e9, transparent);
+    box-shadow: 0 0 8px #0ea5e9;
+    top: 0;
+    animation: scanMove 2s linear infinite;
+    display: none;
+}
+
+.scan-line.active { display: block; }
+@keyframes scanMove { 0%{top:8px} 100%{top:192px} }
+
+/* Status */
+.face-status {
+    text-align: center;
+    margin-bottom: 1rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #64748b;
+    flex-shrink: 0;
+    transition: all 0.3s;
+}
+
+.status-dot.ready   { background: #10b981; box-shadow: 0 0 8px #10b981; }
+.status-dot.scanning{ background: #0ea5e9; box-shadow: 0 0 8px #0ea5e9; animation: pulse 1s ease-in-out infinite; }
+.status-dot.success { background: #10b981; box-shadow: 0 0 12px #10b981; }
+.status-dot.error   { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
+
+/* Bouton scan */
+.btn-face-scan {
+    width: 100%;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 0.75rem;
+}
+
+.btn-face-scan:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(14,165,233,0.35); }
+.btn-face-scan:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: rgba(100,116,139,0.5);
+    font-size: 0.7rem;
+}
+.divider::before, .divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.07); }
+
+.btn-password {
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: rgba(148, 163, 184, 0.8);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-password:hover {
+    border-color: rgba(255,255,255,0.15);
+    color: #fff;
+    background: rgba(255,255,255,0.04);
+}
+
+/* Recognized user card */
+.user-recognized {
+    display: none;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.user-recognized.show { display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.user-recognized .user-name { font-size: 1rem; font-weight: 800; color: #fff; }
+.user-recognized .user-email { font-size: 0.72rem; color: rgba(148,163,184,0.6); }
+.user-recognized .confidence { font-size: 0.7rem; color: #10b981; margin-top: 4px; }
+</style>
+{% endblock %}
+
+{% block login_body %}
+<div class="face-login-page">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="face-card">
+        <!-- Header -->
+        <div class="face-card-header">
+            <img src="{{ asset('images/ns-logo.png') }}" class="face-logo" alt="NS">
+            <h1>Reconnaissance Faciale</h1>
+            <p>Positionnez votre visage dans le cadre puis appuyez sur Scanner</p>
+        </div>
+
+        <!-- Webcam -->
+        <div class="webcam-container">
+            <video id="video" autoplay muted playsinline></video>
+            <canvas id="overlay"></canvas>
+            <div class="scan-frame" id="scanFrame">
+                <div class="scan-corner-bl"></div>
+                <div class="scan-corner-br"></div>
+            </div>
+            <div class="scan-line" id="scanLine"></div>
+        </div>
+
+        <!-- Status -->
+        <div class="face-status" id="faceStatus">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Chargement des modèles IA...</span>
+        </div>
+
+        <!-- User recognized card -->
+        <div class="user-recognized" id="userRecognized">
+            <div style="font-size:2rem;margin-bottom:6px;">✅</div>
+            <div class="user-name" id="recognizedName"></div>
+            <div class="user-email" id="recognizedEmail"></div>
+            <div class="confidence" id="recognizedConfidence"></div>
+        </div>
+
+        <!-- Hidden form for final authentication -->
+        <form id="authForm" action="{{ path('app_face_authenticate') }}" method="post" style="display:none;">
+            <input type="hidden" name="user_id" id="authUserId">
+            <input type="hidden" name="face_token" id="authToken">
+        </form>
+
+        <!-- Scan button -->
+        <button class="btn-face-scan" id="scanBtn" disabled>
+            <i class="fas fa-camera"></i>
+            <span id="scanBtnText">Chargement...</span>
+        </button>
+
+        <div class="divider">ou</div>
+
+        <button class="btn-password" onclick="window.location='{{ path('app_login') }}'">
+            <i class="fas fa-lock me-2"></i> Connexion avec mot de passe
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<!-- face-api.js -->
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+<script>
+const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+const video     = document.getElementById('video');
+const overlay   = document.getElementById('overlay');
+const scanBtn   = document.getElementById('scanBtn');
+const scanBtnText = document.getElementById('scanBtnText');
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const scanFrame = document.getElementById('scanFrame');
+const scanLine  = document.getElementById('scanLine');
+
+let modelsLoaded = false;
+
+function setStatus(state, text) {
+    statusDot.className = 'status-dot ' + state;
+    statusText.textContent = text;
+}
+
+async function loadModels() {
+    try {
+        setStatus('scanning', 'Chargement des modèles IA...');
+        await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        ]);
+        modelsLoaded = true;
+        await startCamera();
+    } catch (err) {
+        setStatus('error', 'Impossible de charger les modèles IA.');
+        console.error(err);
+    }
+}
+
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
+        video.srcObject = stream;
+        video.onloadeddata = () => {
+            setStatus('ready', 'Prêt — Positionnez votre visage');
+            scanBtn.disabled = false;
+            scanBtnText.textContent = 'Scanner mon visage';
+            startFaceDetectionLoop();
+        };
+    } catch (err) {
+        setStatus('error', 'Caméra inaccessible. Vérifiez les permissions.');
+    }
+}
+
+// Detection loop: draw landmarks in real time
+async function startFaceDetectionLoop() {
+    const ctx = overlay.getContext('2d');
+    setInterval(async () => {
+        if (!modelsLoaded || video.paused || video.ended) return;
+        overlay.width  = video.videoWidth;
+        overlay.height = video.videoHeight;
+
+        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks();
+
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+        if (detections.length > 0) {
+            faceapi.draw.drawDetections(overlay, detections);
+            faceapi.draw.drawFaceLandmarks(overlay, detections);
+            scanFrame.classList.add('active');
+        } else {
+            scanFrame.classList.remove('active');
+        }
+    }, 200);
+}
+
+// Main scan action
+scanBtn.addEventListener('click', async () => {
+    if (!modelsLoaded) return;
+    scanBtn.disabled = true;
+    scanLine.classList.add('active');
+    setStatus('scanning', 'Analyse du visage en cours...');
+
+    try {
+        const detection = await faceapi
+            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (!detection) {
+            setStatus('error', 'Aucun visage détecté. Réessayez.');
+            scanBtn.disabled = false;
+            scanLine.classList.remove('active');
+            return;
+        }
+
+        const descriptor = Array.from(detection.descriptor); // Float32Array → []
+
+        // Envoyer au serveur
+        setStatus('scanning', 'Vérification de l\'identité...');
+        const res  = await fetch('{{ path('app_face_login_verify') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ descriptor }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            scanLine.classList.remove('active');
+            setStatus('success', 'Identité confirmée ! Connexion en cours...');
+
+            // Afficher la carte utilisateur
+            document.getElementById('recognizedName').textContent = data.user.name;
+            document.getElementById('recognizedEmail').textContent = data.user.email;
+            const pct = Math.round((1 - data.distance) * 100);
+            document.getElementById('recognizedConfidence').textContent = `Confiance : ${pct}%`;
+            document.getElementById('userRecognized').classList.add('show');
+
+            // Soumettre le formulaire d'authentification après 1.5s
+            document.getElementById('authUserId').value = data.user.id;
+            document.getElementById('authToken').value  = data.token;
+            setTimeout(() => document.getElementById('authForm').submit(), 1500);
+        } else {
+            setStatus('error', data.message || 'Visage non reconnu.');
+            scanBtn.disabled = false;
+            scanLine.classList.remove('active');
+            setTimeout(() => setStatus('ready', 'Réessayez ou utilisez votre mot de passe'), 3000);
+        }
+    } catch (err) {
+        setStatus('error', 'Erreur inattendue : ' + err.message);
+        scanBtn.disabled = false;
+        scanLine.classList.remove('active');
+    }
+});
+
+// Init on load
+window.addEventListener('load', () => {
+    setTimeout(loadModels, 500);
+});
+</script>
+{% endblock %}

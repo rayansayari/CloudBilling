@@ -388,7 +388,37 @@
             <button class="login-btn mt-3" type="submit" id="loginBtn">
                 <span id="btnText"><i class="fas fa-sign-in-alt me-2"></i>Se connecter</span>
             </button>
+
+            <div class="login-divider"><span>ou</span></div>
+
+            <a href="{{ path('app_face_login') }}" class="btn-face-login">
+                <i class="fas fa-camera me-2"></i> Connexion avec mon visage
+            </a>
         </form>
+
+        <style>
+            .btn-face-login {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                padding: 14px 20px;
+                background: rgba(14, 165, 233, 0.1);
+                color: #0ea5e9;
+                border: 1px solid rgba(14, 165, 233, 0.3);
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 0.95rem;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                margin-top: 1rem;
+            }
+            .btn-face-login:hover {
+                background: rgba(14, 165, 233, 0.2);
+                border-color: rgba(14, 165, 233, 0.5);
+                color: #fff;
+            }
+        </style>
 
         <div class="login-divider">
             <span>Accès sécurisé</span>
