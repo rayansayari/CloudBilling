@@ -57,38 +57,74 @@ class ChatbotService
             ],
         ];
 
-        $url     = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=' . $this->geminiApiKey;
-        $json    = json_encode($payload);
+        // Modèles à essayer dans l'ordre (fallback automatique si surcharge)
+        $models = [
+            'gemini-3.5-flash',
+            'gemini-2.5-flash',
+            'gemini-2.0-flash',
+            'gemini-2.0-flash-lite',
+            'gemini-flash-latest',
+            'gemini-2.5-flash-lite',
+        ];
 
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $json,
-            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-            CURLOPT_TIMEOUT        => 30,
-            CURLOPT_SSL_VERIFYPEER => false,
-        ]);
+        $lastError  = '';
+        $allOverloaded = true;
 
-        $response = curl_exec($ch);
-        $error    = curl_error($ch);
-        curl_close($ch);
+        foreach ($models as $model) {
+            $url  = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . $this->geminiApiKey;
+            $json = json_encode($payload);
 
-        if ($error) {
-            return '⚠️ Erreur de connexion à l\'API Gemini : ' . $error;
+            for ($attempt = 1; $attempt <= 2; $attempt++) {
+                $ch = curl_init($url);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_POST           => true,
+                    CURLOPT_POSTFIELDS     => $json,
+                    CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+                    CURLOPT_TIMEOUT        => 30,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                ]);
+
+                $response = curl_exec($ch);
+                $error    = curl_error($ch);
+                curl_close($ch);
+
+                if ($error) {
+                    $lastError    = $error;
+                    $allOverloaded = false;
+                    continue;
+                }
+
+                $data     = json_decode($response, true);
+                $apiError = $data['error']['message'] ?? '';
+
+                // ✅ Succès
+                if (!empty($data['candidates'][0]['content']['parts'][0]['text'])) {
+                    return $data['candidates'][0]['content']['parts'][0]['text'];
+                }
+
+                // 🔁 Surcharge / quota → essayer le modèle suivant
+                if (str_contains($apiError, 'high demand') || str_contains($apiError, 'overloaded') || str_contains($apiError, 'quota') || str_contains($apiError, 'RESOURCE_EXHAUSTED')) {
+                    break; // passer au modèle suivant
+                }
+
+                // ❌ Autre erreur (clé invalide, modèle non trouvé…)
+                if (!empty($apiError)) {
+                    $lastError    = $apiError;
+                    $allOverloaded = false;
+                    break;
+                }
+
+                if ($attempt < 2) usleep(400000); // 0.4s avant 2ème tentative
+            }
         }
 
-        $data = json_decode($response, true);
-
-        if (!empty($data['candidates'][0]['content']['parts'][0]['text'])) {
-            return $data['candidates'][0]['content']['parts'][0]['text'];
+        // Tous les modèles surchargés
+        if ($allOverloaded) {
+            return '😔 L\'API Gemini est momentanément saturée (forte demande globale). Cela arrive parfois. Veuillez patienter 1 à 2 minutes et réessayer.';
         }
 
-        if (!empty($data['error']['message'])) {
-            return '⚠️ Erreur API : ' . $data['error']['message'];
-        }
-
-        return '⚠️ Réponse inattendue de l\'API.';
+        return '⚠️ Erreur inattendue : ' . $lastError;
     }
 
     /**

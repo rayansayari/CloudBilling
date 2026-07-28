@@ -1,72 +1,313 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Prévisualisation de l'offre - CloudBill{% endblock %}
-{% block page_title %}Vérification des données extraites{% endblock %}
+{% block title %}Prévisualisation Offre — {{ project.soNumber }}{% endblock %}
+{% block page_title %}Prévisualisation Offre Financière{% endblock %}
+
+{% block stylesheets %}
+<style>
+.offer-preview-wrapper {
+    animation: fadeInUp 0.4s ease both;
+}
+
+.offer-meta-card {
+    background: linear-gradient(135deg, rgba(15, 28, 54, 0.8), rgba(20, 36, 65, 0.9));
+    border: 1px solid rgba(26, 111, 212, 0.2);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.offer-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.offer-meta-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(122, 144, 184, 0.7);
+}
+.offer-meta-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Table des lignes */
+.offer-table-wrapper {
+    background: rgba(8, 16, 36, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.offer-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+}
+
+.offer-table thead tr {
+    background: rgba(26, 111, 212, 0.12);
+    border-bottom: 1px solid rgba(26, 111, 212, 0.2);
+}
+
+.offer-table thead th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: rgba(122, 144, 184, 0.8);
+    white-space: nowrap;
+}
+
+.offer-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.15s;
+}
+
+.offer-table tbody tr:hover {
+    background: rgba(26, 111, 212, 0.06);
+}
+
+.offer-table td {
+    padding: 0.65rem 1rem;
+    color: #cbd5e1;
+    vertical-align: middle;
+}
+
+.service-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.sku-code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    color: var(--ns-cyan);
+    background: rgba(14, 165, 233, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(14, 165, 233, 0.15);
+}
+
+.price-total {
+    font-weight: 700;
+    color: #fff;
+}
+
+.discount-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.65rem;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 2px 7px;
+    border-radius: 12px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* Summary footer */
+.offer-summary {
+    background: rgba(14, 165, 233, 0.07);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 3rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-item {
+    text-align: right;
+}
+
+.summary-label {
+    font-size: 0.65rem;
+    color: rgba(122, 144, 184, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+.summary-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--ns-cyan);
+}
+
+/* Cloud service type colors */
+.st-iaas  { background: rgba(99,102,241,0.15); color: #818cf8; }
+.st-paas  { background: rgba(16,185,129,0.15); color: #34d399; }
+.st-saas  { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.st-backup { background: rgba(239,68,68,0.12); color: #f87171; }
+.st-storage { background: rgba(14,165,233,0.12); color: #38bdf8; }
+.st-network { background: rgba(168,85,247,0.12); color: #c084fc; }
+.st-db    { background: rgba(20,184,166,0.12); color: #2dd4bf; }
+.st-other { background: rgba(100,116,139,0.12); color: #94a3b8; }
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="mb-4 d-flex justify-content-between align-items-center">
-    <div>
-        <h4 class="fw-bold mb-1">Prévisualisation de l'import</h4>
-        <p class="text-muted mb-0">Projet : <span class="fw-medium text-light">{{ project.soNumber }}</span> — Fichier : <span class="fw-medium text-light">{{ offer.fileName }}</span></p>
-    </div>
-    <div>
-        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 fs-6 px-3 py-2">
-            Version {{ offer.version }}
-        </span>
-    </div>
-</div>
+<div class="offer-preview-wrapper">
 
-<div class="glass-card overflow-hidden">
-    <div class="p-4 border-bottom border-secondary border-opacity-25 bg-white bg-opacity-5">
-        <h6 class="fw-semibold text-accent mb-0"><i class="fas fa-list-check me-2"></i> {{ lines|length }} ressource(s) détectée(s)</h6>
+    <!-- En-tête de l'offre -->
+    <div class="offer-meta-card">
+        <div class="offer-meta-item">
+            <span class="offer-meta-label">Client</span>
+            <span class="offer-meta-value">{{ project.company.name }}</span>
+        </div>
+        <div class="offer-meta-item">
+            <span class="offer-meta-label">Projet (SO)</span>
+            <span class="offer-meta-value" style="color: var(--ns-cyan);">{{ project.soNumber }}</span>
+        </div>
+        <div class="offer-meta-item">
+            <span class="offer-meta-label">Fichier importé</span>
+            <span class="offer-meta-value">{{ offer.fileName }}</span>
+        </div>
+        <div class="offer-meta-item">
+            <span class="offer-meta-label">Version</span>
+            <span class="offer-meta-value" style="color: #a78bfa;">v{{ offer.version }}</span>
+        </div>
+        <div class="offer-meta-item">
+            <span class="offer-meta-label">Date d'effet</span>
+            <span class="offer-meta-value">{{ offer.effectiveDate|date('d/m/Y') }}</span>
+        </div>
+        <div class="offer-meta-item">
+            <span class="offer-meta-label">Lignes détectées</span>
+            <span class="offer-meta-value">{{ lines|length }}</span>
+        </div>
     </div>
-    
-    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-        <table class="table table-dark table-hover mb-0">
-            <thead class="table-dark position-sticky top-0 shadow-sm" style="z-index: 1;">
+
+    <!-- Tableau des services -->
+    <div class="offer-table-wrapper">
+        <table class="offer-table">
+            <thead>
                 <tr>
                     <th>#</th>
-                    <th>Ressource / Désignation</th>
-                    <th>Type de Service</th>
+                    <th>SKU ID</th>
+                    <th>Service Cloud</th>
+                    <th>Nom du Service</th>
+                    <th>Terme</th>
+                    <th>Qté</th>
                     <th>Unité</th>
-                    <th>Quantité (Défaut)</th>
-                    <th class="text-end">Prix Unitaire</th>
+                    <th>Prix Unitaire</th>
+                    <th>Remise</th>
+                    <th>Sous-Total</th>
+                    <th>Prix Total</th>
                 </tr>
             </thead>
             <tbody>
-                {% for key, line in lines %}
+                {% set grandTotal = 0 %}
+                {% set grandSubTotal = 0 %}
+
+                {% for line in lines %}
+                    {% set subTotal = line.subTotal %}
+                    {% set totalPrice = line.totalPrice %}
+                    {% set grandSubTotal = grandSubTotal + subTotal %}
+                    {% set grandTotal = grandTotal + totalPrice %}
+
+                    {% set stClass = 'st-other' %}
+                    {% if line.serviceType %}
+                        {% set st = line.serviceType|lower %}
+                        {% if 'iaas' in st %}{% set stClass = 'st-iaas' %}
+                        {% elseif 'paas' in st %}{% set stClass = 'st-paas' %}
+                        {% elseif 'saas' in st %}{% set stClass = 'st-saas' %}
+                        {% elseif 'backup' in st or 'bkp' in st or 'recovery' in st %}{% set stClass = 'st-backup' %}
+                        {% elseif 'storage' in st or 'stockage' in st %}{% set stClass = 'st-storage' %}
+                        {% elseif 'network' in st or 'réseau' in st %}{% set stClass = 'st-network' %}
+                        {% elseif 'db' in st or 'database' in st or 'base' in st %}{% set stClass = 'st-db' %}
+                        {% endif %}
+                    {% endif %}
+
                     <tr>
-                        <td class="text-muted">{{ key + 1 }}</td>
-                        <td class="fw-semibold">{{ line.resourceName }}</td>
-                        <td>{{ line.serviceType|default('<span class="text-muted fst-italic">Non détecté</span>')|raw }}</td>
-                        <td><span class="badge bg-secondary">{{ line.unit }}</span></td>
-                        <td>{{ line.quantity|default('-') }}</td>
-                        <td class="text-end fw-bold text-accent">{{ line.unitPrice }} TND</td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center py-5 text-warning">
-                            <i class="fas fa-exclamation-triangle fs-2 mb-3 d-block"></i>
-                            Aucune donnée n'a pu être extraite correctement. Vérifiez le format du fichier.
+                        <td class="text-muted">{{ loop.index }}</td>
+                        <td>
+                            {% if line.skuId %}
+                                <span class="sku-code">{{ line.skuId }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
                         </td>
+                        <td>
+                            {% if line.serviceType %}
+                                <span class="service-type-badge {{ stClass }}">{{ line.serviceType }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="max-width:200px;">
+                            <span style="font-weight:600;color:#e2e8f0;" title="{{ line.resourceName }}">{{ line.resourceName }}</span>
+                            {% if line.description %}
+                                <div style="font-size:0.65rem;color:rgba(122,144,184,0.6);margin-top:2px;">{{ line.description|slice(0, 60) }}{% if line.description|length > 60 %}...{% endif %}</div>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:center;">
+                            <span style="color:#a78bfa;font-weight:700;">{{ line.term }}m</span>
+                        </td>
+                        <td style="text-align:center;">{{ line.quantity ?? 1 }}</td>
+                        <td>{{ line.unit }}</td>
+                        <td style="text-align:right;">{{ line.unitPrice|number_format(2, ',', ' ') }}</td>
+                        <td style="text-align:center;">
+                            {% if line.discount and line.discount > 0 %}
+                                <span class="discount-badge">
+                                    {% if line.discountType == 'percent' %}-{{ line.discount|number_format(1) }}%
+                                    {% else %}-{{ line.discount|number_format(2, ',', ' ') }} TND{% endif %}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:right;color:#94a3b8;">{{ subTotal|number_format(2, ',', ' ') }}</td>
+                        <td style="text-align:right;" class="price-total">{{ totalPrice|number_format(2, ',', ' ') }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
 
-<div class="d-flex justify-content-between align-items-center mt-4">
-    <a href="{{ path('app_financial_offer_new', {'project_id': project.id}) }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-2"></i> Choisir un autre fichier
-    </a>
-    
-    {% if lines|length > 0 %}
-        <form method="post" action="{{ path('app_financial_offer_preview', {'project_id': project.id}) }}">
-            <button type="submit" class="btn btn-success px-5 py-2 fw-semibold shadow">
-                <i class="fas fa-check-circle me-2"></i> Valider et Activer cette offre
+    <!-- Résumé financier -->
+    <div class="offer-summary">
+        <div class="summary-item">
+            <div class="summary-label">Sous-Total</div>
+            <div class="summary-value" style="color:#94a3b8;font-size:0.9rem;">{{ grandSubTotal|number_format(2, ',', ' ') }} TND</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Remises appliquées</div>
+            <div class="summary-value" style="color:#f59e0b;font-size:0.9rem;">- {{ (grandSubTotal - grandTotal)|number_format(2, ',', ' ') }} TND</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">TOTAL GÉNÉRAL TND</div>
+            <div class="summary-value" style="font-size:1.4rem;">{{ grandTotal|number_format(2, ',', ' ') }} TND</div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-3 justify-content-end">
+        <a href="{{ path('app_project_show', {'id': project.id}) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Annuler
+        </a>
+        <form method="post" class="d-inline">
+            <button type="submit" class="btn btn-primary btn-lg px-4">
+                <i class="fas fa-check-circle me-2"></i> Confirmer et Activer cette Offre (v{{ offer.version }})
             </button>
         </form>
-    {% endif %}
+    </div>
 </div>
 {% endblock %}

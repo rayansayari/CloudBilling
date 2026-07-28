@@ -126,9 +126,14 @@ class FinancialOfferController extends AbstractController
                 $line = new \App\Entity\OfferLine();
                 $line->setResourceName($lineData->getResourceName());
                 $line->setServiceType($lineData->getServiceType());
+                $line->setSkuId($lineData->getSkuId());
+                $line->setTerm($lineData->getTerm());
                 $line->setUnit($lineData->getUnit());
                 $line->setUnitPrice($lineData->getUnitPrice());
                 $line->setQuantity($lineData->getQuantity());
+                $line->setDiscount($lineData->getDiscount());
+                $line->setDiscountType($lineData->getDiscountType());
+                $line->setDescription($lineData->getDescription());
                 $offerToSave->addOfferLine($line);
             }
 
