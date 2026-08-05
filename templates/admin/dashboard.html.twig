@@ -56,12 +56,61 @@
     </div>
 </div>
 
+<!-- ML Forecasting Highlight Banner -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="adm-card position-relative overflow-hidden" style="background: linear-gradient(135deg, #0b132b 0%, #1c2541 50%, #1e1b4b 100%); border: 1px solid rgba(236,72,153,0.4); box-shadow: 0 12px 36px rgba(236,72,153,0.18); border-radius: 16px;">
+            <!-- Decorative background glow -->
+            <div style="position: absolute; right: -20px; top: -20px; width: 140px; height: 140px; background: rgba(236,72,153,0.15); filter: blur(40px); border-radius: 50%; pointer-events: none;"></div>
+            
+            <div class="p-3 p-md-4 d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative" style="z-index: 1;">
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Glowing Icon Container -->
+                    <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, rgba(236,72,153,0.25) 0%, rgba(124,58,237,0.25) 100%); border: 1px solid rgba(236,72,153,0.5); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #f472b6; box-shadow: 0 0 20px rgba(236,72,153,0.3);">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                            <h5 class="fw-bold mb-0 text-white" style="font-size: 1.05rem; letter-spacing: -0.01em;">Modèle IA de Prédiction Financière (Financial Forecasting ML)</h5>
+                            <span class="badge ms-2" style="background: rgba(236,72,153,0.25); color: #f472b6; border: 1px solid rgba(236,72,153,0.4); font-size: 0.72rem; padding: 5px 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block;">
+                                <i class="fab fa-python me-1"></i>{{ mlForecast.engine|default('Python Scikit-Learn ML') }}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: rgba(226,232,240,0.85); font-weight: 500;">
+                            <span>{{ mlForecast.modelName }}</span>
+                            <span class="mx-2" style="color: rgba(255,255,255,0.2);">|</span>
+                            <span>Précision Modèle (R²) : <strong style="color: #34d399; font-weight: 700;">{{ mlForecast.rSquared }}%</strong></span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Growth Rate KPI Badge -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end" style="background: rgba(15,23,42,0.6); padding: 8px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(148,163,184,0.9); font-weight: 600;">Tendance IA (+6 Mois)</div>
+                        <div class="fw-bold fs-4" style="color: {{ mlForecast.growthRate >= 0 ? '#34d399' : '#f87171' }}; font-variant-numeric: tabular-nums;">
+                            <i class="fas fa-arrow-{{ mlForecast.growthRate >= 0 ? 'up' : 'down' }} me-1" style="font-size: 0.9rem;"></i>
+                            {{ mlForecast.growthRate >= 0 ? '+' : '' }}{{ mlForecast.growthRate }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <div class="row g-4 mb-4">
-    <!-- Chart: Revenue Trend -->
-    <div class="col-12 col-xl-8">
+    <!-- Chart: Revenue Trend & ML Forecast (Total TTC) -->
+    <div class="col-12 col-lg-6">
         <div class="adm-card h-100">
-            <div class="adm-card-header">
-                <div class="adm-card-title"><i class="fas fa-chart-line"></i> Évolution des revenus</div>
+            <div class="adm-card-header d-flex align-items-center justify-content-between">
+                <div class="adm-card-title"><i class="fas fa-chart-line text-purple me-1"></i> Évolution & Prédiction IA ML</div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge" style="background: rgba(236,72,153,0.15); color: #ec4899; font-size: 0.65rem; border: 1px solid rgba(236,72,153,0.3);">Pointillés = IA</span>
+                    <span class="chart-status-badge" id="status-revenueChart" title="Statut du diagramme"></span>
+                </div>
             </div>
             <div class="adm-card-body">
                 <div style="height: 280px; position: relative;">
@@ -71,11 +120,87 @@
         </div>
     </div>
 
-    <!-- Chart: Revenue by Company (Donut) -->
-    <div class="col-12 col-xl-4">
+
+    <!-- Chart: Comparison HT vs TTC -->
+    <div class="col-12 col-lg-6">
         <div class="adm-card h-100">
-            <div class="adm-card-header">
+            <div class="adm-card-header d-flex align-items-center justify-content-between">
+                <div class="adm-card-title"><i class="fas fa-chart-area"></i> Évolution Comparée HT vs TTC</div>
+                <span class="chart-status-badge" id="status-htVsTtcChart"></span>
+            </div>
+            <div class="adm-card-body">
+                <div style="height: 280px; position: relative;">
+                    <canvas id="htVsTtcChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Chart: Monthly Invoice Volume Line Chart -->
+    <div class="col-12 col-lg-6">
+        <div class="adm-card h-100">
+            <div class="adm-card-header d-flex align-items-center justify-content-between">
+                <div class="adm-card-title"><i class="fas fa-file-signature"></i> Volume Mensuel des Factures</div>
+                <span class="chart-status-badge" id="status-invoiceVolumeChart"></span>
+            </div>
+            <div class="adm-card-body">
+                <div style="height: 280px; position: relative;">
+                    <canvas id="invoiceVolumeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart: Monthly Project Creation Line Chart -->
+    <div class="col-12 col-lg-6">
+        <div class="adm-card h-100">
+            <div class="adm-card-header d-flex align-items-center justify-content-between">
+                <div class="adm-card-title"><i class="fas fa-diagram-project"></i> Évolution Création de Projets</div>
+                <span class="chart-status-badge" id="status-projectCreationChart"></span>
+            </div>
+            <div class="adm-card-body">
+                <div style="height: 280px; position: relative;">
+                    <canvas id="projectCreationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart: Financial Candlesticks (Chandeliers Japonais) -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="adm-card h-100">
+            <div class="adm-card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="adm-card-title">
+                    <i class="fas fa-chart-bar text-warning me-1"></i> Analyse Boursière & Variations Financières (Chandeliers Japonais / Candlesticks)
+                </div>
+                <div class="d-flex align-items-center gap-3" style="font-size:0.75rem; color:var(--adm-text-muted);">
+                    <span><span style="display:inline-block; width:10px; height:10px; background:#10b981; border-radius:2px; margin-right:4px;"></span> Hausse (Clôture &ge; Ouverture)</span>
+                    <span><span style="display:inline-block; width:10px; height:10px; background:#ef4444; border-radius:2px; margin-right:4px;"></span> Baisse (Clôture &lt; Ouverture)</span>
+                    <span class="chart-status-badge" id="status-candlestickChart"></span>
+                </div>
+            </div>
+            <div class="adm-card-body">
+                <div style="height: 320px; position: relative;">
+                    <canvas id="candlestickChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="row g-4 mb-4">
+    <!-- Chart: Revenue by Company (Donut) -->
+    <div class="col-12 col-lg-4">
+        <div class="adm-card h-100">
+            <div class="adm-card-header d-flex align-items-center justify-content-between">
                 <div class="adm-card-title"><i class="fas fa-chart-pie"></i> Répartition par Société</div>
+                <span class="chart-status-badge" id="status-companyDonut"></span>
             </div>
             <div class="adm-card-body d-flex align-items-center justify-content-center">
                 {% if companyTotals|length > 0 %}
@@ -85,7 +210,51 @@
                 {% else %}
                     <div class="text-center text-muted">
                         <i class="fas fa-folder-open fs-2 mb-2 opacity-50"></i>
-                        <p class="mb-0">Aucune donnée facturée</p>
+                        <p class="mb-0">Aucune donnée</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart: Invoice Status (Donut) -->
+    <div class="col-12 col-lg-4">
+        <div class="adm-card h-100">
+            <div class="adm-card-header d-flex align-items-center justify-content-between">
+                <div class="adm-card-title"><i class="fas fa-file-invoice-dollar"></i> Statut des Factures</div>
+                <span class="chart-status-badge" id="status-invoiceStatusChart"></span>
+            </div>
+            <div class="adm-card-body d-flex align-items-center justify-content-center">
+                {% if (validatedCount + draftCount) > 0 %}
+                    <div style="height: 250px; width: 100%; position: relative;">
+                        <canvas id="invoiceStatusChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-inbox fs-2 mb-2 opacity-50"></i>
+                        <p class="mb-0">Aucune facture</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart: Project Status (Donut) -->
+    <div class="col-12 col-lg-4">
+        <div class="adm-card h-100">
+            <div class="adm-card-header d-flex align-items-center justify-content-between">
+                <div class="adm-card-title"><i class="fas fa-project-diagram"></i> Projets par Statut</div>
+                <span class="chart-status-badge" id="status-projectStatusChart"></span>
+            </div>
+            <div class="adm-card-body d-flex align-items-center justify-content-center">
+                {% if (activeProjCount + pausedProjCount + completedProjCount) > 0 %}
+                    <div style="height: 250px; width: 100%; position: relative;">
+                        <canvas id="projectStatusChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-box-open fs-2 mb-2 opacity-50"></i>
+                        <p class="mb-0">Aucun projet</p>
                     </div>
                 {% endif %}
             </div>
@@ -157,28 +326,233 @@
     Chart.defaults.color = '#64748b';
     Chart.defaults.font.family = 'Inter, sans-serif';
 
-    // Revenue Line Chart
+    const monthsLabels   = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const forecastLabels = {{ mlForecast.labels|json_encode|raw }};
+
+    // 1. Revenue Line Chart + ML Time-Series Forecast
     const ctxRev = document.getElementById('revenueChart');
     if (ctxRev) {
         new Chart(ctxRev.getContext('2d'), {
             type: 'line',
             data: {
-                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+                labels: forecastLabels,
+                datasets: [
+                    {
+                        label: 'Revenu Réel (TND)',
+                        data: {{ mlForecast.historical|json_encode|raw }},
+                        borderColor: '#7c3aed',
+                        backgroundColor: (ctx) => {
+                            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 260);
+                            gradient.addColorStop(0, 'rgba(124,58,237, 0.45)');
+                            gradient.addColorStop(1, 'rgba(124,58,237, 0.0)');
+                            return gradient;
+                        },
+                        borderWidth: 2.5,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#030710',
+                        pointBorderColor: '#7c3aed',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    },
+                    {
+                        label: 'Prédiction IA ML',
+                        data: {{ mlForecast.forecast|json_encode|raw }},
+                        borderColor: '#ec4899',
+                        borderDash: [6, 6],
+                        backgroundColor: 'rgba(236,72,153, 0.05)',
+                        borderWidth: 2.5,
+                        tension: 0.4,
+                        fill: false,
+                        pointBackgroundColor: '#030710',
+                        pointBorderColor: '#ec4899',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    },
+                    {
+                        label: 'Borne Supérieure (95%)',
+                        data: {{ mlForecast.upperBound|json_encode|raw }},
+                        borderColor: 'rgba(56, 189, 248, 0.4)',
+                        borderDash: [3, 3],
+                        borderWidth: 1,
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 0,
+                    },
+                    {
+                        label: 'Intervalle 95% (Zone ML)',
+                        data: {{ mlForecast.lowerBound|json_encode|raw }},
+                        borderColor: 'rgba(56, 189, 248, 0.4)',
+                        borderDash: [3, 3],
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        borderWidth: 1,
+                        tension: 0.4,
+                        fill: '-1', // Fill area between lower and upper bounds
+                        pointRadius: 0,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            boxWidth: 10,
+                            padding: 10,
+                            filter: (item) => item.text !== 'Borne Supérieure (95%)' // Hide duplicate legend item
+                        }
+                    }
+                },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, border: { display: false } },
+                    x: { grid: { display: false }, border: { display: false } }
+                }
+            }
+        });
+    }
+
+
+    // 2. Comparison Line Chart: Total HT vs Total TTC
+    const ctxHtTtc = document.getElementById('htVsTtcChart');
+    if (ctxHtTtc) {
+        new Chart(ctxHtTtc.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: monthsLabels,
+                datasets: [
+                    {
+                        label: 'Total TTC (TND)',
+                        data: {{ chartTTC|json_encode|raw }},
+                        borderColor: '#10b981',
+                        backgroundColor: (ctx) => {
+                            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 260);
+                            gradient.addColorStop(0, 'rgba(16,185,129, 0.35)');
+                            gradient.addColorStop(1, 'rgba(16,185,129, 0.0)');
+                            return gradient;
+                        },
+                        borderWidth: 2.5,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#030710',
+                        pointBorderColor: '#10b981',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    },
+                    {
+                        label: 'Total HT (TND)',
+                        data: {{ chartHT|json_encode|raw }},
+                        borderColor: '#8b5cf6',
+                        backgroundColor: (ctx) => {
+                            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 260);
+                            gradient.addColorStop(0, 'rgba(139,92,246, 0.2)');
+                            gradient.addColorStop(1, 'rgba(139,92,246, 0.0)');
+                            return gradient;
+                        },
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#030710',
+                        pointBorderColor: '#8b5cf6',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 10, padding: 12 } } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, border: { display: false } },
+                    x: { grid: { display: false }, border: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 3. Monthly Invoice Volume Line Chart
+    const ctxVol = document.getElementById('invoiceVolumeChart');
+    if (ctxVol) {
+        new Chart(ctxVol.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: monthsLabels,
+                datasets: [
+                    {
+                        label: 'Factures Validées',
+                        data: {{ chartValidatedCount|json_encode|raw }},
+                        borderColor: '#0ea5e9',
+                        backgroundColor: (ctx) => {
+                            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 260);
+                            gradient.addColorStop(0, 'rgba(14,165,233, 0.35)');
+                            gradient.addColorStop(1, 'rgba(14,165,233, 0.0)');
+                            return gradient;
+                        },
+                        borderWidth: 2.5,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#030710',
+                        pointBorderColor: '#0ea5e9',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    },
+                    {
+                        label: 'Brouillons',
+                        data: {{ chartDraftCount|json_encode|raw }},
+                        borderColor: '#f59e0b',
+                        backgroundColor: (ctx) => {
+                            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 260);
+                            gradient.addColorStop(0, 'rgba(245,158,11, 0.2)');
+                            gradient.addColorStop(1, 'rgba(245,158,11, 0.0)');
+                            return gradient;
+                        },
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#030710',
+                        pointBorderColor: '#f59e0b',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 10, padding: 12 } } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, border: { display: false }, ticks: { stepSize: 1 } },
+                    x: { grid: { display: false }, border: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 4. Monthly Project Creation Trend Line Chart
+    const ctxProj = document.getElementById('projectCreationChart');
+    if (ctxProj) {
+        new Chart(ctxProj.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: monthsLabels,
                 datasets: [{
-                    label: 'Revenu',
-                    data: {{ chartRevenue|json_encode|raw }},
-                    borderColor: '#7c3aed',
+                    label: 'Nouveaux Projets',
+                    data: {{ chartProjectsCreated|json_encode|raw }},
+                    borderColor: '#ec4899',
                     backgroundColor: (ctx) => {
-                        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
-                        gradient.addColorStop(0, 'rgba(124,58,237, 0.4)');
-                        gradient.addColorStop(1, 'rgba(124,58,237, 0.0)');
+                        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 260);
+                        gradient.addColorStop(0, 'rgba(236,72,153, 0.35)');
+                        gradient.addColorStop(1, 'rgba(236,72,153, 0.0)');
                         return gradient;
                     },
-                    borderWidth: 2,
+                    borderWidth: 2.5,
                     tension: 0.4,
                     fill: true,
                     pointBackgroundColor: '#030710',
-                    pointBorderColor: '#7c3aed',
+                    pointBorderColor: '#ec4899',
                     pointBorderWidth: 2,
                     pointRadius: 4,
                 }]
@@ -188,12 +562,101 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, border: { display: false }, ticks: { stepSize: 1 } },
+                    x: { grid: { display: false }, border: { display: false } }
+                }
+            }
+        });
+    }
+
+
+    // 5. Candlestick Chart (Chandeliers Japonais - OHLC)
+
+    const ctxCandle = document.getElementById('candlestickChart');
+    if (ctxCandle) {
+        const rawCandleData = {{ candlestickData|json_encode|raw }};
+
+        // Floating bar data [min(open, close), max(open, close)] for the candle body
+        const floatingBars = rawCandleData.map(d => {
+            const bodyMin = Math.min(d.open, d.close);
+            const bodyMax = Math.max(d.open, d.close);
+            return bodyMin === bodyMax ? [bodyMin, bodyMin + 1] : [bodyMin, bodyMax];
+        });
+
+        // Colors: Green (#10b981) if close >= open (Bullish), Red (#ef4444) if close < open (Bearish)
+        const barColors    = rawCandleData.map(d => d.close >= d.open ? 'rgba(16,185,129,0.85)' : 'rgba(239,68,68,0.85)');
+        const borderColors = rawCandleData.map(d => d.close >= d.open ? '#059669' : '#dc2626');
+
+        // Custom plugin to draw high/low wicks
+        const candleWickPlugin = {
+            id: 'candleWicks',
+            beforeDatasetsDraw(chart) {
+                const { ctx } = chart;
+                const meta = chart.getDatasetMeta(0);
+                const yScale = chart.scales.y;
+
+                meta.data.forEach((bar, index) => {
+                    const item = rawCandleData[index];
+                    if (!item || (item.high === 0 && item.low === 0)) return;
+
+                    const x = bar.x;
+                    const highY = yScale.getPixelForValue(item.high);
+                    const lowY  = yScale.getPixelForValue(item.low);
+
+                    ctx.save();
+                    ctx.strokeStyle = item.close >= item.open ? '#10b981' : '#ef4444';
+                    ctx.lineWidth   = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, highY);
+                    ctx.lineTo(x, lowY);
+                    ctx.stroke();
+                    ctx.restore();
+                });
+            }
+        };
+
+        new Chart(ctxCandle.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: monthsLabels,
+                datasets: [{
+                    label: 'Variation Financière (TND)',
+                    data: floatingBars,
+                    backgroundColor: barColors,
+                    borderColor: borderColors,
+                    borderWidth: 1.5,
+                    borderRadius: 4,
+                    barPercentage: 0.45,
+                }]
+            },
+            plugins: [candleWickPlugin],
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label(context) {
+                                const d = rawCandleData[context.dataIndex];
+                                return [
+                                    `Ouverture (HT) : ${d.open.toLocaleString('fr-FR')} TND`,
+                                    `Plus Haut (Peak) : ${d.high.toLocaleString('fr-FR')} TND`,
+                                    `Plus Bas (Base)  : ${d.low.toLocaleString('fr-FR')} TND`,
+                                    `Clôture (TTC)   : ${d.close.toLocaleString('fr-FR')} TND`,
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
                     y: { grid: { color: 'rgba(255,255,255,0.03)' }, border: { display: false } },
                     x: { grid: { display: false }, border: { display: false } }
                 }
             }
         });
     }
+
 
     // Company Donut Chart
     const ctxDonut = document.getElementById('companyDonut');
@@ -221,5 +684,210 @@
             }
         });
     }
+    // Invoice Status Donut Chart
+    const ctxInvoice = document.getElementById('invoiceStatusChart');
+    if (ctxInvoice && ({{ validatedCount }} > 0 || {{ draftCount }} > 0)) {
+        new Chart(ctxInvoice.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Validées', 'Brouillons'],
+                datasets: [{
+                    data: [{{ validatedCount }}, {{ draftCount }}],
+                    backgroundColor: ['#10b981', '#f59e0b'], // Green and Orange
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, padding: 15 } }
+                }
+            }
+        });
+    }
+    // Project Status Donut Chart
+    const ctxProject = document.getElementById('projectStatusChart');
+    if (ctxProject && ({{ activeProjCount }} > 0 || {{ pausedProjCount }} > 0 || {{ completedProjCount }} > 0)) {
+        new Chart(ctxProject.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Actif', 'En pause', 'Terminé'],
+                datasets: [{
+                    data: [{{ activeProjCount }}, {{ pausedProjCount }}, {{ completedProjCount }}],
+                    backgroundColor: ['#10b981', '#f59e0b', '#64748b'], // Green, Orange, Gray
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, padding: 15 } }
+                }
+            }
+        });
+    }
+
+</script>
+
+<style>
+/* ─── Chart Status Badge Styles ─────────────────────────────── */
+.chart-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+.chart-status-badge.status-ok {
+    background: rgba(16,185,129,0.15);
+    color: #34d399;
+    border: 1px solid rgba(16,185,129,0.35);
+}
+.chart-status-badge.status-warn {
+    background: rgba(245,158,11,0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245,158,11,0.35);
+}
+.chart-status-badge.status-error {
+    background: rgba(239,68,68,0.15);
+    color: #f87171;
+    border: 1px solid rgba(239,68,68,0.35);
+}
+/* Pulsing dot */
+.chart-status-badge .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+.chart-status-badge.status-ok .status-dot {
+    background: #34d399;
+    box-shadow: 0 0 0 0 rgba(52,211,153,0.6);
+    animation: pulse-green 2s infinite;
+}
+.chart-status-badge.status-warn .status-dot {
+    background: #fbbf24;
+    animation: pulse-yellow 2s infinite;
+}
+.chart-status-badge.status-error .status-dot {
+    background: #f87171;
+    animation: pulse-red 1s infinite;
+}
+@keyframes pulse-green {
+    0%   { box-shadow: 0 0 0 0 rgba(52,211,153,0.6); }
+    70%  { box-shadow: 0 0 0 6px rgba(52,211,153,0); }
+    100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+}
+@keyframes pulse-yellow {
+    0%   { box-shadow: 0 0 0 0 rgba(251,191,36,0.6); }
+    70%  { box-shadow: 0 0 0 6px rgba(251,191,36,0); }
+    100% { box-shadow: 0 0 0 0 rgba(251,191,36,0); }
+}
+@keyframes pulse-red {
+    0%   { box-shadow: 0 0 0 0 rgba(248,113,113,0.7); }
+    70%  { box-shadow: 0 0 0 6px rgba(248,113,113,0); }
+    100% { box-shadow: 0 0 0 0 rgba(248,113,113,0); }
+}
+</style>
+
+<script>
+/**
+ * ─── Chart Health Check System ───────────────────────────────
+ * Checks each chart canvas after rendering and sets a status badge:
+ *  ✅ Actif  = canvas exists + Chart.js instance registered + has data
+ *  ⚠️ Vide   = canvas exists but no data points
+ *  ❌ Erreur = canvas not found or Chart.js failed
+ */
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Map: canvasId -> statusBadgeId
+    const CHARTS_TO_CHECK = [
+        { id: 'revenueChart',        statusId: 'status-revenueChart',        label: 'Révenus ML' },
+        { id: 'htVsTtcChart',        statusId: 'status-htVsTtcChart',        label: 'HT vs TTC' },
+        { id: 'invoiceVolumeChart',  statusId: 'status-invoiceVolumeChart',  label: 'Factures' },
+        { id: 'projectCreationChart',statusId: 'status-projectCreationChart',label: 'Projets' },
+        { id: 'candlestickChart',    statusId: 'status-candlestickChart',    label: 'Candlestick' },
+        { id: 'companyDonut',        statusId: 'status-companyDonut',        label: 'Sociétés' },
+        { id: 'invoiceStatusChart',  statusId: 'status-invoiceStatusChart',  label: 'Statut' },
+        { id: 'projectStatusChart',  statusId: 'status-projectStatusChart',  label: 'Projets St.' },
+    ];
+
+    function setStatus(badgeId, state, label) {
+        const badge = document.getElementById(badgeId);
+        if (!badge) return;
+        badge.className = 'chart-status-badge ' + (
+            state === 'ok'    ? 'status-ok' :
+            state === 'warn'  ? 'status-warn' : 'status-error'
+        );
+        const icon  = state === 'ok' ? '✔' : (state === 'warn' ? '⚠' : '✖');
+        const text  = state === 'ok' ? 'Actif' : (state === 'warn' ? 'Vide' : 'Erreur');
+        badge.innerHTML = '<span class="status-dot"></span>' + icon + ' ' + text;
+        badge.title = (
+            state === 'ok'   ? '✅ Diagramme actif et calculs corrects' :
+            state === 'warn' ? '⚠️ Diagramme chargé mais aucune donnée disponible' :
+                               '❌ Erreur : impossible de charger le diagramme'
+        ) + ' — ' + label;
+    }
+
+    // Wait a tick to ensure Chart.js has finished rendering
+    setTimeout(function () {
+        CHARTS_TO_CHECK.forEach(function (cfg) {
+            const canvas = document.getElementById(cfg.id);
+
+            if (!canvas) {
+                // Canvas element missing → skip (chart hidden due to no data condition in Twig)
+                const badge = document.getElementById(cfg.statusId);
+                if (badge) {
+                    badge.className = 'chart-status-badge status-warn';
+                    badge.innerHTML = '<span class="status-dot"></span>⚠ Vide';
+                    badge.title = '⚠️ Aucune donnée disponible pour ce diagramme';
+                }
+                return;
+            }
+
+            // Try to retrieve Chart.js instance
+            let chartInstance = null;
+            try {
+                chartInstance = Chart.getChart(canvas);
+            } catch (e) {
+                setStatus(cfg.statusId, 'error', cfg.label);
+                return;
+            }
+
+            if (!chartInstance) {
+                setStatus(cfg.statusId, 'error', cfg.label);
+                return;
+            }
+
+            // Check if datasets have actual non-null, non-zero data
+            let hasData = false;
+            try {
+                chartInstance.data.datasets.forEach(function (ds) {
+                    if (ds.data && ds.data.some(function (v) {
+                        return v !== null && v !== undefined && v !== 0 &&
+                               !(Array.isArray(v) && v.every(function(x){ return x === 0; }));
+                    })) {
+                        hasData = true;
+                    }
+                });
+            } catch(e) { hasData = true; } // Candlestick complex data — assume ok
+
+            setStatus(cfg.statusId, hasData ? 'ok' : 'warn', cfg.label);
+        });
+    }, 800); // wait 800ms after page load for Chart.js render
+});
 </script>
 {% endblock %}
+

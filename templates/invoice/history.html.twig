@@ -3,61 +3,274 @@
 {% block title %}Historique des factures - CloudBill{% endblock %}
 {% block page_title %}Historique des factures{% endblock %}
 
+{% block stylesheets %}
+<style>
+/* ========== INVOICE TABLE ========== */
+.invoice-table-wrapper {
+    background: rgba(12, 22, 48, 0.7);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.invoice-table thead tr {
+    background: rgba(4, 9, 21, 0.6);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.invoice-table thead th {
+    padding: 1rem 1.25rem;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(122,144,184,0.7);
+    white-space: nowrap;
+}
+
+.invoice-table thead th .th-icon {
+    margin-right: 6px;
+    font-size: 0.75rem;
+}
+
+.invoice-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+    animation: rowSlideIn 0.4s ease both;
+}
+
+.invoice-table tbody tr:nth-child(1) { animation-delay: 0.03s; }
+.invoice-table tbody tr:nth-child(2) { animation-delay: 0.06s; }
+.invoice-table tbody tr:nth-child(3) { animation-delay: 0.09s; }
+.invoice-table tbody tr:nth-child(4) { animation-delay: 0.12s; }
+.invoice-table tbody tr:nth-child(5) { animation-delay: 0.15s; }
+.invoice-table tbody tr:nth-child(6) { animation-delay: 0.18s; }
+.invoice-table tbody tr:nth-child(7) { animation-delay: 0.21s; }
+.invoice-table tbody tr:nth-child(8) { animation-delay: 0.24s; }
+
+@keyframes rowSlideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.invoice-table tbody tr:hover {
+    background: rgba(26,111,212,0.06);
+}
+
+.invoice-table tbody tr:last-child { border-bottom: none; }
+
+.invoice-table tbody td {
+    padding: 0.9rem 1.25rem;
+    vertical-align: middle;
+    color: #e2e8f0;
+}
+
+/* Ref cell */
+.ref-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ref-icon {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: rgba(26,111,212,0.15);
+    border: 1px solid rgba(26,111,212,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #60a5fa;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+.ref-number { font-weight: 700; color: #fff; font-size: 0.85rem; }
+
+/* Project link */
+.project-link {
+    color: #e2e8f0;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+.project-link:hover { color: var(--ns-cyan); }
+
+/* Company name */
+.company-name-cell {
+    color: rgba(122,144,184,0.8);
+    font-size: 0.78rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.company-name-cell i { color: var(--ns-cyan); font-size: 0.7rem; }
+
+/* Period */
+.period-cell {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+.period-cell i { color: rgba(122,144,184,0.5); font-size: 0.75rem; }
+
+/* Status badges */
+.status-validated {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.3);
+    color: #34d399;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+.status-draft {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245,158,11,0.12);
+    border: 1px solid rgba(245,158,11,0.3);
+    color: #fbbf24;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+/* Amount */
+.amount-cell {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #fff;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.amount-currency {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: rgba(122,144,184,0.6);
+    margin-left: 3px;
+}
+
+/* Action buttons */
+.action-btns {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    justify-content: flex-end;
+}
+.action-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 0.78rem;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+.action-btn-view { background: rgba(14,165,233,0.1); border-color: rgba(14,165,233,0.25); color: #38bdf8; }
+.action-btn-view:hover { background: rgba(14,165,233,0.25); color: #fff; transform: scale(1.1); }
+.action-btn-pdf  { background: rgba(239,68,68,0.1);  border-color: rgba(239,68,68,0.25);  color: #f87171; }
+.action-btn-pdf:hover  { background: rgba(239,68,68,0.25);  color: #fff; transform: scale(1.1); }
+.action-btn-excel{ background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.25); color: #34d399; }
+.action-btn-excel:hover{ background: rgba(16,185,129,0.25); color: #fff; transform: scale(1.1); }
+
+/* Empty state */
+.empty-row td {
+    text-align: center;
+    padding: 3rem;
+    color: rgba(122,144,184,0.5);
+}
+</style>
+{% endblock %}
+
 {% block body %}
-<div class="glass-card overflow-hidden">
-    <table class="table table-dark table-hover mb-0">
-        <thead class="table-dark">
+<div class="invoice-table-wrapper">
+    <table class="invoice-table">
+        <thead>
             <tr>
-                <th>Référence</th>
-                <th>Projet</th>
-                <th>Période</th>
-                <th>Statut</th>
-                <th class="text-end">Total TTC</th>
-                <th class="text-end">Actions</th>
+                <th><span class="th-icon" style="color:#60a5fa;"><i class="fas fa-file-invoice"></i></span>Référence</th>
+                <th><span class="th-icon" style="color:var(--ns-cyan);"><i class="fas fa-diagram-project"></i></span>Projet</th>
+                <th><span class="th-icon" style="color:rgba(122,144,184,0.6);"><i class="fas fa-building"></i></span>Société</th>
+                <th><span class="th-icon" style="color:#a78bfa;"><i class="fas fa-calendar"></i></span>Période</th>
+                <th><span class="th-icon" style="color:#34d399;"><i class="fas fa-circle-check"></i></span>Statut</th>
+                <th style="text-align:right;"><span class="th-icon" style="color:#fbbf24;"><i class="fas fa-coins"></i></span>Total TTC</th>
+                <th style="text-align:right;">Actions</th>
             </tr>
         </thead>
         <tbody>
         {% for invoice in pagination %}
             <tr>
-                <td class="align-middle fw-medium">
-                    <i class="fas fa-file-invoice text-accent me-2"></i>
-                    {{ invoice.reference }}
+                <td>
+                    <div class="ref-cell">
+                        <div class="ref-icon"><i class="fas fa-file-alt"></i></div>
+                        <span class="ref-number">{{ invoice.reference }}</span>
+                    </div>
                 </td>
-                <td class="align-middle">
-                    <a href="{{ path('app_project_show', {'id': invoice.project.id}) }}" class="text-light text-decoration-none">
+                <td>
+                    <a href="{{ path('app_project_show', {'id': invoice.project.id}) }}" class="project-link">
                         {{ invoice.project.name }}
                     </a>
                 </td>
-                <td class="align-middle text-muted">
-                    {{ invoice.monthName }} {{ invoice.year }}
+                <td>
+                    <div class="company-name-cell">
+                        <i class="fas fa-building"></i>
+                        {{ invoice.project.company.name }}
+                    </div>
                 </td>
-                <td class="align-middle">
+                <td>
+                    <div class="period-cell">
+                        <i class="fas fa-calendar-alt"></i>
+                        {{ invoice.monthName }} {{ invoice.year }}
+                    </div>
+                </td>
+                <td>
                     {% if invoice.status == 'Validée' %}
-                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25"><i class="fas fa-check-circle me-1"></i> Validée</span>
+                        <span class="status-validated"><i class="fas fa-check-circle"></i> Validée</span>
                     {% else %}
-                        <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25"><i class="fas fa-clock me-1"></i> Brouillon</span>
+                        <span class="status-draft"><i class="fas fa-clock"></i> Brouillon</span>
                     {% endif %}
                 </td>
-                <td class="align-middle text-end text-light fw-bold">
-                    {{ invoice.totalTTC|number_format(2, ',', ' ') }} €
+                <td>
+                    <div class="amount-cell">
+                        {{ invoice.totalTTC|number_format(2, ',', ' ') }}<span class="amount-currency">TND</span>
+                    </div>
                 </td>
-                <td class="align-middle text-end">
-                    <a href="{{ path('app_invoice_edit', {'project_id': invoice.project.id, 'id': invoice.id}) }}" class="btn btn-sm btn-outline-info" title="Voir / Éditer">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                    {% if invoice.status == 'Validée' %}
-                        <a href="{{ path('app_invoice_export_pdf', {'project_id': invoice.project.id, 'id': invoice.id}) }}" class="btn btn-sm btn-outline-danger ms-1" title="PDF" target="_blank">
-                            <i class="fas fa-file-pdf"></i>
+                <td>
+                    <div class="action-btns">
+                        <a href="{{ path('app_invoice_edit', {'project_id': invoice.project.id, 'id': invoice.id}) }}" class="action-btn action-btn-view" title="Voir / Éditer">
+                            <i class="fas fa-eye"></i>
                         </a>
-                        <a href="{{ path('app_invoice_export_excel', {'project_id': invoice.project.id, 'id': invoice.id}) }}" class="btn btn-sm btn-outline-success ms-1" title="Excel">
-                            <i class="fas fa-file-excel"></i>
-                        </a>
-                    {% endif %}
+                        {% if invoice.status == 'Validée' %}
+                            <a href="{{ path('app_invoice_export_pdf', {'project_id': invoice.project.id, 'id': invoice.id}) }}" class="action-btn action-btn-pdf" title="PDF" target="_blank">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                            <a href="{{ path('app_invoice_export_excel', {'project_id': invoice.project.id, 'id': invoice.id}) }}" class="action-btn action-btn-excel" title="Excel">
+                                <i class="fas fa-file-excel"></i>
+                            </a>
+                        {% endif %}
+                    </div>
                 </td>
             </tr>
         {% else %}
-            <tr>
-                <td colspan="6" class="text-center py-4 text-muted">Aucune facture générée pour le moment.</td>
+            <tr class="empty-row">
+                <td colspan="7">
+                    <i class="fas fa-inbox fa-2x d-block mb-2 mx-auto" style="color:rgba(122,144,184,0.3);"></i>
+                    Aucune facture générée pour le moment.
+                </td>
             </tr>
         {% endfor %}
         </tbody>

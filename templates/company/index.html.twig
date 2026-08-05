@@ -5,7 +5,7 @@
 
 {% block stylesheets %}
 <style>
-/* CSS Spécifique pour les Cartes Sociétés (Front Office) */
+/* ========== COMPANY GRID ========== */
 .company-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -13,33 +13,74 @@
 }
 
 .company-card {
-    background: rgba(15, 28, 54, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 1.5rem;
+    background: rgba(15, 28, 54, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 0;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     display: flex;
     flex-direction: column;
-    height: 100%;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    animation: cardFadeIn 0.4s ease both;
 }
 
-/* La barre de couleur unique en haut */
-.company-card::before {
+.company-card:nth-child(2) { animation-delay: 0.05s; }
+.company-card:nth-child(3) { animation-delay: 0.10s; }
+.company-card:nth-child(4) { animation-delay: 0.15s; }
+.company-card:nth-child(5) { animation-delay: 0.20s; }
+.company-card:nth-child(6) { animation-delay: 0.25s; }
+
+@keyframes cardFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Bande couleur en haut */
+.company-card-top {
+    height: 5px;
+    background: var(--card-color, var(--accent));
+    position: relative;
+}
+.company-card-top::after {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: var(--card-color, var(--accent));
-    opacity: 0.8;
+    inset: 0;
+    background: inherit;
+    filter: blur(8px);
+    opacity: 0.5;
+    transform: scaleY(3);
 }
 
 .company-card:hover {
-    transform: translateY(-4px);
-    background: rgba(20, 36, 65, 0.9);
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 20px var(--card-glow, rgba(26,111,212,0.1));
+    transform: translateY(-6px);
+    border-color: var(--card-color, rgba(26,111,212,0.5));
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px var(--card-glow, rgba(26,111,212,0.2));
+}
+
+.company-card-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Avatar */
+.company-avatar {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    background: var(--card-gradient, linear-gradient(135deg, #1a6fd4, #0ea5e9));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 15px var(--card-glow, rgba(26,111,212,0.4));
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .company-header {
@@ -49,58 +90,41 @@
     margin-bottom: 1.25rem;
 }
 
-.company-avatar {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--card-color, var(--text-main));
-    flex-shrink: 0;
-}
-
 .company-info h3 {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 700;
     margin: 0 0 4px 0;
     color: #fff;
     line-height: 1.2;
 }
 
-.company-info p {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    margin: 0;
+.company-info .date-badge {
+    font-size: 0.7rem;
+    color: rgba(122, 144, 184, 0.7);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
 }
 
+/* Stats */
 .company-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     padding: 1rem;
     background: rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
+    border-radius: 14px;
     margin-bottom: 1.25rem;
-    margin-top: auto;
 }
 
-.stat-item {
-    display: flex;
-    flex-direction: column;
-}
+.stat-item { display: flex; flex-direction: column; }
 
 .stat-label {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: rgba(122, 144, 184, 0.7);
+    color: rgba(122, 144, 184, 0.6);
     margin-bottom: 4px;
 }
 
@@ -110,67 +134,238 @@
     color: #fff;
 }
 
+.stat-email {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #60a5fa;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.stat-email:hover { color: #93c5fd; }
+.stat-email i { font-size: 0.7rem; opacity: 0.7; flex-shrink: 0; }
+
+/* Projet progress bar */
+.proj-count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ns-cyan);
+}
+.proj-count-badge i { font-size: 0.7rem; opacity: 0.7; }
+
+/* Actions */
 .company-actions {
     display: flex;
     gap: 8px;
+    margin-top: auto;
+}
+
+.btn-open {
+    flex: 1;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light, #3b82f6) 100%);
+    border: none;
+    color: #fff;
+    border-radius: 10px;
+    padding: 0.55rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(26,111,212,0.3);
+}
+.btn-open:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(26,111,212,0.5);
+    color: #fff;
+}
+.btn-open i { transition: transform 0.3s ease; }
+.btn-open:hover i { transform: translateX(3px); }
+
+.btn-add-project {
+    width: 42px;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    color: #34d399;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+}
+.btn-add-project:hover {
+    background: rgba(16,185,129,0.25);
+    border-color: #34d399;
+    color: #34d399;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+
+/* ========== SEARCH BAR ========== */
+.search-bar-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 420px;
+}
+.search-bar-wrapper .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(122,144,184,0.6);
+    font-size: 0.85rem;
+    pointer-events: none;
+    z-index: 2;
+}
+.search-bar-wrapper input {
+    width: 100%;
+    background: rgba(10, 20, 45, 0.8);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    color: #e2e8f0;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+.search-bar-wrapper input:focus {
+    border-color: rgba(26,111,212,0.5);
+    box-shadow: 0 0 0 3px rgba(26,111,212,0.15);
+    background: rgba(15, 28, 54, 0.95);
+}
+.search-bar-wrapper input::placeholder { color: rgba(122,144,184,0.4); }
+.btn-search-go {
+    background: linear-gradient(135deg, var(--accent), #3b82f6);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(26,111,212,0.3);
+}
+.btn-search-go:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(26,111,212,0.5);
 }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="d-flex justify-content-between align-items-center mb-4 animate-in">
-    <form method="get" class="d-flex w-50">
-        <div class="input-group">
-            <span class="input-group-text bg-transparent border-end-0"><i class="fas fa-search text-muted"></i></span>
-            <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 ps-0" placeholder="Rechercher une société...">
-            <button type="submit" class="btn btn-outline-secondary">Chercher</button>
+<div class="d-flex justify-content-between align-items-center mb-4 animate-in" style="gap:1rem; position:relative; z-index: 200;">
+    {# Barre de recherche premium #}
+    <form method="get" class="d-flex align-items-center gap-2" style="flex:1;max-width:480px;">
+        <div class="search-bar-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" name="q" value="{{ search_query }}" placeholder="Rechercher une société...">
         </div>
+        <button type="submit" class="btn-search-go">
+            <i class="fas fa-search"></i> Chercher
+        </button>
     </form>
-    
-    <a href="{{ path('app_company_new') }}" class="btn btn-primary">
+
+    <div class="dropdown me-auto">
+        <button class="btn-sort dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-sort-amount-down"></i> Trier par
+        </button>
+        <ul class="dropdown-menu dropdown-menu-dark shadow">
+            <li>{{ knp_pagination_sortable(pagination, 'Nom (A-Z)', 'c.name', {'direction': 'asc'}, {'class': 'dropdown-item'}) }}</li>
+            <li>{{ knp_pagination_sortable(pagination, 'Nom (Z-A)', 'c.name', {'direction': 'desc'}, {'class': 'dropdown-item'}) }}</li>
+            <li><hr class="dropdown-divider"></li>
+            <li>{{ knp_pagination_sortable(pagination, 'Plus récents', 'c.createdAt', {'direction': 'desc'}, {'class': 'dropdown-item'}) }}</li>
+            <li>{{ knp_pagination_sortable(pagination, 'Plus anciens', 'c.createdAt', {'direction': 'asc'}, {'class': 'dropdown-item'}) }}</li>
+        </ul>
+    </div>
+
+    <a href="{{ path('app_company_new') }}" class="btn btn-primary" style="border-radius:10px;font-weight:600;white-space:nowrap;">
         <i class="fas fa-plus me-2"></i> Nouvelle Société
     </a>
 </div>
 
 <div class="company-grid">
     {% for company in pagination %}
-        {# Génération d'une couleur pseudo-aléatoire basée sur le nom pour égayer les cartes #}
-        {% set colors = ['#0ea5e9', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#f43f5e'] %}
-        {% set colorIndex = company.name|length % colors|length %}
-        {% set cardColor = colors[colorIndex] %}
-        
-        <div class="company-card animate-in" style="--card-color: {{ cardColor }}; --card-glow: {{ cardColor }}20;">
-            <div class="company-header">
-                <div class="company-avatar">
-                    {{ company.name|slice(0,1)|upper }}
+        {% set gradients = [
+            'linear-gradient(135deg,#1a6fd4,#0ea5e9)',
+            'linear-gradient(135deg,#059669,#10b981)',
+            'linear-gradient(135deg,#7c3aed,#a78bfa)',
+            'linear-gradient(135deg,#d97706,#f59e0b)',
+            'linear-gradient(135deg,#db2777,#ec4899)',
+            'linear-gradient(135deg,#dc2626,#f43f5e)'
+        ] %}
+        {% set glows = [
+            'rgba(26,111,212,0.3)',
+            'rgba(16,185,129,0.3)',
+            'rgba(124,58,237,0.3)',
+            'rgba(245,158,11,0.3)',
+            'rgba(236,72,153,0.3)',
+            'rgba(244,63,94,0.3)'
+        ] %}
+        {% set colorBars = ['#0ea5e9','#10b981','#8b5cf6','#f59e0b','#ec4899','#f43f5e'] %}
+        {% set idx = company.name|length % gradients|length %}
+
+        <div class="company-card" style="--card-color:{{ colorBars[idx] }};--card-glow:{{ glows[idx] }};--card-gradient:{{ gradients[idx] }};">
+            <div class="company-card-top"></div>
+            <div class="company-card-body">
+                <div class="company-header">
+                    <div class="company-avatar">
+                        {{ company.name|slice(0,1)|upper }}
+                    </div>
+                    <div class="company-info flex-grow-1 min-w-0">
+                        <h3 class="text-truncate" title="{{ company.name }}">{{ company.name }}</h3>
+                        <div class="date-badge">
+                            <i class="fas fa-calendar-alt"></i>
+                            Ajoutée le {{ company.createdAt ? company.createdAt|date('d/m/Y') : '—' }}
+                        </div>
+                    </div>
                 </div>
-                <div class="company-info flex-grow-1 min-w-0">
-                    <h3 class="text-truncate" title="{{ company.name }}">{{ company.name }}</h3>
-                    <p>
-                        <i class="fas fa-calendar-alt opacity-75"></i> 
-                        Ajoutée le {{ company.createdAt ? company.createdAt|date('d/m/Y') : '' }}
-                    </p>
+
+                <div class="company-stats">
+                    <div class="stat-item">
+                        <span class="stat-label"><i class="fas fa-folder-open me-1"></i>Projets</span>
+                        <div class="proj-count-badge">
+                            <i class="fas fa-diagram-project"></i>
+                            {{ company.projects|length }}
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label"><i class="fas fa-envelope me-1"></i>Email</span>
+                        {% if company.email %}
+                            <a href="mailto:{{ company.email }}" class="stat-email" title="{{ company.email }}">
+                                <i class="fas fa-at"></i>
+                                {{ company.email }}
+                            </a>
+                        {% else %}
+                            <span class="stat-email" style="color:rgba(122,144,184,0.4);">—</span>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-            
-            <div class="company-stats">
-                <div class="stat-item">
-                    <span class="stat-label">Projets Actifs</span>
-                    <span class="stat-value text-ns-cyan">{{ company.projects|length }}</span>
+
+                <div class="company-actions">
+                    <a href="{{ path('app_company_show', {'id': company.id}) }}" class="btn-open">
+                        <i class="fas fa-eye"></i> Ouvrir <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a href="{{ path('app_project_new', {'company': company.id}) }}" class="btn-add-project" title="Créer un projet pour cette société">
+                        <i class="fas fa-plus"></i>
+                    </a>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">Email</span>
-                    <span class="stat-value fs-6 mt-1 text-muted text-truncate" title="{{ company.email|default('N/A') }}">{{ company.email|default('N/A') }}</span>
-                </div>
-            </div>
-            
-            <div class="company-actions">
-                <a href="{{ path('app_company_show', {'id': company.id}) }}" class="btn btn-primary flex-grow-1">
-                    <i class="fas fa-eye me-1"></i> Ouvrir
-                </a>
-                <a href="{{ path('app_project_new', {'company': company.id}) }}" class="btn btn-outline-light" title="Créer un nouveau projet pour cette société">
-                    <i class="fas fa-plus text-success"></i>
-                </a>
             </div>
         </div>
     {% else %}

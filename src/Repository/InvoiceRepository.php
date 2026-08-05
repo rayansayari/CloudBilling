@@ -57,4 +57,24 @@ class InvoiceRepository extends ServiceEntityRepository
             ->groupBy('i.month')->orderBy('i.month', 'ASC')
             ->getQuery()->getResult();
     }
+
+    public function getMonthlyBreakdownHTvsTTC(int $year): array
+    {
+        return $this->createQueryBuilder('i')
+            ->select('i.month, SUM(i.totalHT) as totalHT, SUM(i.totalTTC) as totalTTC')
+            ->andWhere('i.year = :y')->setParameter('y', $year)
+            ->andWhere('i.status = :s')->setParameter('s', Invoice::STATUS_VALIDATED)
+            ->groupBy('i.month')->orderBy('i.month', 'ASC')
+            ->getQuery()->getResult();
+    }
+
+    public function getMonthlyInvoiceCountByStatus(int $year): array
+    {
+        return $this->createQueryBuilder('i')
+            ->select('i.month, i.status, COUNT(i.id) as count')
+            ->andWhere('i.year = :y')->setParameter('y', $year)
+            ->groupBy('i.month', 'i.status')->orderBy('i.month', 'ASC')
+            ->getQuery()->getResult();
+    }
 }
+

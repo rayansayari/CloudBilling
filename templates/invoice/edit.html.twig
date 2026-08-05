@@ -46,7 +46,7 @@
                                     <td class="fw-semibold">{{ line.resourceName }}</td>
                                     <td>{{ line.serviceType|default('-') }}</td>
                                     <td class="text-center"><span class="badge bg-secondary">{{ line.unit }}</span></td>
-                                    <td class="text-end font-monospace text-muted">{{ line.unitPrice }}</td>
+                                    <td class="text-end font-monospace fw-semibold" style="color: #60a5fa;">{{ line.unitPrice|number_format(4, ',', ' ') }}</td>
                                     <td>
                                         <input type="number" step="0.0001" min="0" 
                                                name="quantities[{{ line.id }}]" 
@@ -82,13 +82,13 @@
             <h5 class="fw-semibold mb-4 text-center">Récapitulatif</h5>
             
             <div class="d-flex justify-content-between mb-2">
-                <span class="text-muted">Total HT</span>
-                <span class="fw-medium font-monospace" id="summary-ht">{{ invoice.totalHT }}</span>
+                <span style="color: rgba(180, 200, 230, 0.75);">Total HT</span>
+                <span class="fw-medium font-monospace" id="summary-ht">{{ invoice.totalHT|number_format(4, ',', ' ') }}</span>
             </div>
             
             <div class="d-flex justify-content-between mb-3 pb-3 border-bottom border-secondary border-opacity-25">
-                <span class="text-muted">TVA ({{ invoice.tvaRate }}%)</span>
-                <span class="fw-medium font-monospace" id="summary-tva">{{ invoice.totalTVA }}</span>
+                <span style="color: rgba(180, 200, 230, 0.75);">TVA ({{ invoice.tvaRate }}%)</span>
+                <span class="fw-medium font-monospace" id="summary-tva">{{ invoice.totalTVA|number_format(4, ',', ' ') }}</span>
             </div>
             
             <div class="d-flex justify-content-between align-items-center">

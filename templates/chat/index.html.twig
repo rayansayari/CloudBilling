@@ -1,0 +1,640 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chat Collaborative — CloudBill{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* ─── CLOUDBILL CHAT ROOM — CONSULTANT / FRONT OFFICE ────────────────────── */
+.chat-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    height: calc(100vh - 185px);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid rgba(14,165,233,0.3);
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+    overflow: hidden;
+}
+
+
+
+.chat-sidebar {
+    background: rgba(15,23,42,0.85);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-sidebar-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-sidebar-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-nav-section {
+    padding: 14px 16px 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(148,163,184,0.7);
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    margin: 2px 10px;
+    border-radius: 10px;
+    color: rgba(226,232,240,0.8);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.chat-item:hover {
+    background: rgba(14,165,233,0.15);
+    color: #ffffff;
+}
+
+.chat-item.active {
+    background: linear-gradient(135deg, rgba(14,165,233,0.35) 0%, rgba(99,102,241,0.25) 100%);
+    border: 1px solid rgba(14,165,233,0.5);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.chat-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+    flex-shrink: 0;
+}
+
+.chat-main {
+    display: flex;
+    flex-direction: column;
+    background: rgba(15,23,42,0.4);
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.chat-main-header {
+    padding: 16px 24px;
+    background: rgba(15,23,42,0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.chat-active-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-feed {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chat-input-bar {
+    flex-shrink: 0;
+}
+
+
+.chat-msg-wrapper {
+    display: flex;
+    gap: 12px;
+    max-width: 80%;
+}
+
+.chat-msg-wrapper.me {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.chat-msg-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.chat-msg-bubble {
+    background: rgba(30,41,59,0.9);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 12px 16px;
+    color: #e2e8f0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.chat-msg-wrapper.me .chat-msg-bubble {
+    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 16px rgba(14,165,233,0.3);
+}
+
+.chat-msg-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 0.72rem;
+    opacity: 0.8;
+}
+
+/* Chat Input Bar */
+.chat-input-bar {
+    padding: 16px 20px;
+    background: rgba(15,23,42,0.85);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+}
+
+.chat-action-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(14,165,233,0.3);
+    color: #7dd3fc;
+    border-radius: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-action-btn:hover {
+    background: rgba(14,165,233,0.25);
+    color: #ffffff;
+    border-color: #0ea5e9;
+}
+
+.chat-input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(14,165,233,0.3);
+    border-radius: 12px;
+    padding: 12px 18px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    background: rgba(255,255,255,0.09);
+    box-shadow: 0 0 0 3px rgba(14,165,233,0.2);
+}
+
+.chat-send-btn {
+    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    border: none;
+    color: #ffffff;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(14,165,233,0.35);
+}
+
+.chat-send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(14,165,233,0.5);
+}
+
+.chat-msg-del-btn {
+    background: transparent;
+    border: none;
+    color: rgba(248, 113, 113, 0.6);
+    font-size: 0.72rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    margin-left: 6px;
+    opacity: 0;
+    transition: all 0.2s;
+}
+
+.chat-msg-wrapper:hover .chat-msg-del-btn {
+    opacity: 1;
+}
+
+.chat-msg-del-btn:hover {
+    color: #f87171;
+    transform: scale(1.2);
+}
+
+/* Emoji & GIF Popups */
+.chat-popup {
+    position: absolute;
+    bottom: 70px;
+    left: 20px;
+    background: #0f172a;
+    border: 1px solid rgba(14,165,233,0.4);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.5);
+    z-index: 100;
+    display: none;
+    animation: fadeInUp 0.2s ease-out;
+}
+
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.emoji-item {
+    font-size: 1.25rem;
+    cursor: pointer;
+    text-align: center;
+    padding: 6px;
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+
+.emoji-item:hover {
+    background: rgba(14,165,233,0.3);
+}
+
+.gif-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-height: 240px;
+    overflow-y: auto;
+    width: 320px;
+}
+
+.gif-item {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.gif-item:hover {
+    border-color: #0ea5e9;
+    transform: scale(1.04);
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-white mb-1">Espace Chat Collaborative</h1>
+            <p class="text-muted mb-0">Échangez en direct avec l'administration et vos collègues consultants.</p>
+        </div>
+    </div>
+
+    <div class="chat-layout">
+
+        <!-- ======= SIDEBAR ======= -->
+        <div class="chat-sidebar">
+            <div class="chat-sidebar-header">
+                <div class="chat-sidebar-title">
+                    <i class="fas fa-comments" style="color:#0ea5e9;"></i>
+                    <span>CloudBill Chat</span>
+                </div>
+                <span class="badge" style="background:rgba(14,165,233,0.2); color:#38bdf8; font-size:0.68rem;">En direct</span>
+            </div>
+
+            <!-- Channels Section -->
+            <div class="chat-nav-section">Canaux de Discussion</div>
+            <div class="chat-item active" data-type="channel" data-id="general" onclick="selectConversation('channel', 'general', '# Général')">
+                <i class="fas fa-hashtag me-1" style="color:#38bdf8;"></i>
+                <span>Général</span>
+            </div>
+            <div class="chat-item" data-type="channel" data-id="projects" onclick="selectConversation('channel', 'projects', '# Projets Cloud')">
+                <i class="fas fa-hashtag me-1" style="color:#a78bfa;"></i>
+                <span>Projets Cloud</span>
+            </div>
+            <div class="chat-item" data-type="channel" data-id="billing" onclick="selectConversation('channel', 'billing', '# Support Facturation')">
+                <i class="fas fa-hashtag me-1" style="color:#34d399;"></i>
+                <span>Support Facturation</span>
+            </div>
+
+            <!-- Direct Messages Section -->
+            <div class="chat-nav-section mt-3">Messages Directs</div>
+            <div style="flex:1; overflow-y:auto;">
+                {% for u in allUsers %}
+                    <div class="chat-item" data-type="user" data-id="{{ u.id }}" onclick="selectConversation('user', {{ u.id }}, '{{ u.fullName|e('js') }}')">
+                        <img src="https://ui-avatars.com/api/?name={{ u.fullName|url_encode }}&background=0369a1&color=38bdf8&bold=true" class="chat-avatar" alt="">
+                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ u.fullName }}</span>
+                    </div>
+                {% else %}
+                    <div class="p-3 text-muted" style="font-size:0.78rem;">Aucun autre utilisateur</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ======= MAIN CHAT AREA ======= -->
+        <div class="chat-main">
+            <!-- Header -->
+            <div class="chat-main-header">
+                <div class="chat-active-name" id="chatTitle">
+                    <i class="fas fa-hashtag me-2" style="color:#0ea5e9;"></i>
+                    <span># Général</span>
+                </div>
+                <div style="font-size:0.78rem; color:rgba(255,255,255,0.5);">
+                    <i class="fas fa-circle text-success me-1" style="font-size:0.5rem; color:#34d399;"></i>Connecté
+                </div>
+            </div>
+
+            <!-- Messages Feed -->
+            <div class="chat-feed" id="chatFeed">
+                <div class="text-center text-muted py-5" style="font-size:0.85rem;">
+                    <i class="fas fa-spinner fa-spin me-2"></i>Chargement de la discussion...
+                </div>
+            </div>
+
+            <!-- Emoji Picker Popup -->
+            <div id="emojiPicker" class="chat-popup">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span style="font-size:0.75rem; color:#7dd3fc; font-weight:600;">Émojis</span>
+                    <span onclick="toggleEmojiPicker()" style="cursor:pointer; color:#64748b; font-size:0.8rem;">&times;</span>
+                </div>
+                <div class="emoji-grid">
+                    <span class="emoji-item" onclick="insertEmoji('😀')">😀</span>
+                    <span class="emoji-item" onclick="insertEmoji('😂')">😂</span>
+                    <span class="emoji-item" onclick="insertEmoji('😊')">😊</span>
+                    <span class="emoji-item" onclick="insertEmoji('😍')">😍</span>
+                    <span class="emoji-item" onclick="insertEmoji('😎')">😎</span>
+                    <span class="emoji-item" onclick="insertEmoji('🥳')">🥳</span>
+                    <span class="emoji-item" onclick="insertEmoji('👍')">👍</span>
+                    <span class="emoji-item" onclick="insertEmoji('🙌')">🙌</span>
+                    <span class="emoji-item" onclick="insertEmoji('👏')">👏</span>
+                    <span class="emoji-item" onclick="insertEmoji('🙏')">🙏</span>
+                    <span class="emoji-item" onclick="insertEmoji('💪')">💪</span>
+                    <span class="emoji-item" onclick="insertEmoji('🔥')">🔥</span>
+                    <span class="emoji-item" onclick="insertEmoji('✨')">✨</span>
+                    <span class="emoji-item" onclick="insertEmoji('🎉')">🎉</span>
+                    <span class="emoji-item" onclick="insertEmoji('🚀')">🚀</span>
+                    <span class="emoji-item" onclick="insertEmoji('💼')">💼</span>
+                    <span class="emoji-item" onclick="insertEmoji('💡')">💡</span>
+                    <span class="emoji-item" onclick="insertEmoji('📊')">📊</span>
+                    <span class="emoji-item" onclick="insertEmoji('💰')">💰</span>
+                    <span class="emoji-item" onclick="insertEmoji('✅')">✅</span>
+                    <span class="emoji-item" onclick="insertEmoji('❌')">❌</span>
+                    <span class="emoji-item" onclick="insertEmoji('⚠️')">⚠️</span>
+                    <span class="emoji-item" onclick="insertEmoji('❓')">❓</span>
+                    <span class="emoji-item" onclick="insertEmoji('⚡')">⚡</span>
+                </div>
+            </div>
+
+            <!-- GIF Picker Popup -->
+            <div id="gifPicker" class="chat-popup">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span style="font-size:0.75rem; color:#0ea5e9; font-weight:600;">GIFs Animés</span>
+                    <span onclick="toggleGifPicker()" style="cursor:pointer; color:#64748b; font-size:0.8rem;">&times;</span>
+                </div>
+                <div class="gif-grid">
+                    <img src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif" class="gif-item" onclick="sendGif('https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif')" title="Bravo!">
+                    <img src="https://media.giphy.com/media/3oEjHV0z8S7WM4MwnK/giphy.gif" class="gif-item" onclick="sendGif('https://media.giphy.com/media/3oEjHV0z8S7WM4MwnK/giphy.gif')" title="High Five">
+                    <img src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif" class="gif-item" onclick="sendGif('https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif')" title="Mind Blown">
+                    <img src="https://media.giphy.com/media/13Hgw8T855IpSI/giphy.gif" class="gif-item" onclick="sendGif('https://media.giphy.com/media/13Hgw8T855IpSI/giphy.gif')" title="Working">
+                    <img src="https://media.giphy.com/media/g9582DNuQppxC/giphy.gif" class="gif-item" onclick="sendGif('https://media.giphy.com/media/g9582DNuQppxC/giphy.gif')" title="Cheers">
+                    <img src="https://media.giphy.com/media/3o6gDWzmAzrpi5DQU8/giphy.gif" class="gif-item" onclick="sendGif('https://media.giphy.com/media/3o6gDWzmAzrpi5DQU8/giphy.gif')" title="Money">
+                </div>
+            </div>
+
+            <!-- Input Bar -->
+            <form class="chat-input-bar" id="chatForm" onsubmit="handleSend(event)">
+                <button type="button" class="chat-action-btn" onclick="toggleEmojiPicker()" title="Ajouter un émoji">😀</button>
+                <button type="button" class="chat-action-btn" onclick="toggleGifPicker()" title="Envoyer un GIF">GIF</button>
+                <input type="text" id="chatInput" class="chat-input" placeholder="Écrivez votre message..." autocomplete="off">
+                <button type="submit" class="chat-send-btn" title="Envoyer">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+let currentMode = 'channel';
+let currentTarget = 'general';
+let pollInterval = null;
+
+function selectConversation(mode, targetId, titleText) {
+    currentMode = mode;
+    currentTarget = targetId;
+
+    document.querySelectorAll('.chat-item').forEach(el => {
+        el.classList.remove('active');
+        if (el.dataset.type === mode && el.dataset.id == targetId) {
+            el.classList.add('active');
+        }
+    });
+
+    document.getElementById('chatTitle').innerHTML = mode === 'channel'
+        ? `<i class="fas fa-hashtag me-2" style="color:#0ea5e9;"></i><span>${titleText}</span>`
+        : `<i class="fas fa-user me-2" style="color:#38bdf8;"></i><span>${titleText}</span>`;
+
+    loadMessages();
+}
+
+function toggleEmojiPicker() {
+    const ep = document.getElementById('emojiPicker');
+    const gp = document.getElementById('gifPicker');
+    gp.style.display = 'none';
+    ep.style.display = ep.style.display === 'block' ? 'none' : 'block';
+}
+
+function toggleGifPicker() {
+    const ep = document.getElementById('emojiPicker');
+    const gp = document.getElementById('gifPicker');
+    ep.style.display = 'none';
+    gp.style.display = gp.style.display === 'block' ? 'none' : 'block';
+}
+
+function insertEmoji(emoji) {
+    const input = document.getElementById('chatInput');
+    input.value += emoji;
+    input.focus();
+    toggleEmojiPicker();
+}
+
+function sendGif(gifUrl) {
+    toggleGifPicker();
+    sendMessagePayload(gifUrl);
+}
+
+function deleteMessage(msgId) {
+    if (!confirm('Voulez-vous vraiment supprimer ce message ?')) return;
+
+    fetch('/api/chat/message/' + msgId, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadMessages();
+            }
+        })
+        .catch(err => console.error('Delete error:', err));
+}
+
+function loadMessages() {
+    let url = '/api/chat/messages?';
+    if (currentMode === 'channel') {
+        url += 'channel=' + encodeURIComponent(currentTarget);
+    } else {
+        url += 'user_id=' + encodeURIComponent(currentTarget);
+    }
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            const myId = data.currentUserId;
+            const currentRoles = data.currentRoles || [];
+            const isUserAdmin = currentRoles.includes('ROLE_ADMIN');
+
+            const feed = document.getElementById('chatFeed');
+            if (!data.messages || data.messages.length === 0) {
+                feed.innerHTML = `
+                    <div class="text-center text-muted py-5" style="font-size:0.85rem;">
+                        <i class="fas fa-comments fs-3 mb-2 opacity-50"></i>
+                        <p class="mb-0">Aucun message dans cette discussion. Soyez le premier à écrire !</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            data.messages.forEach(msg => {
+                const isMe = msg.senderId === myId;
+                const isAdmin = (msg.senderRoles || []).includes('ROLE_ADMIN');
+                const meClass = isMe ? 'me' : '';
+
+                const roleBadge = isAdmin
+                    ? `<span style="font-size:0.62rem; background:rgba(124,58,237,0.2); color:#c4b5fd; border-radius:6px; padding:1px 6px; margin-left:4px;">👑 Admin</span>`
+                    : `<span style="font-size:0.62rem; background:rgba(14,165,233,0.2); color:#7dd3fc; border-radius:6px; padding:1px 6px; margin-left:4px;">💼 Consultant</span>`;
+
+                // Delete button (owner or admin)
+                const deleteBtn = (isMe || isUserAdmin)
+                    ? `<button class="chat-msg-del-btn" onclick="deleteMessage(${msg.id})" title="Supprimer"><i class="fas fa-trash-alt"></i></button>`
+                    : '';
+
+                // Render GIF if content is image URL
+                let bodyContent = escapeHtml(msg.content);
+                if (msg.content.startsWith('http') && (msg.content.endsWith('.gif') || msg.content.includes('giphy.gif'))) {
+                    bodyContent = `<img src="${msg.content}" style="max-width:240px; border-radius:10px; display:block; margin-top:4px;">`;
+                }
+
+                html += `
+                    <div class="chat-msg-wrapper ${meClass}">
+                        <img src="${msg.senderAvatar}" class="chat-msg-avatar" alt="${msg.senderName}">
+                        <div>
+                            <div class="chat-msg-header">
+                                <strong style="color:${isMe ? '#7dd3fc' : '#94a3b8'};">${msg.senderName}</strong>
+                                ${roleBadge}
+                                <span>${msg.time}</span>
+                                ${deleteBtn}
+                            </div>
+                            <div class="chat-msg-bubble">
+                                ${bodyContent}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const wasAtBottom = feed.scrollHeight - feed.scrollTop <= feed.clientHeight + 60;
+            feed.innerHTML = html;
+            if (wasAtBottom) feed.scrollTop = feed.scrollHeight;
+        })
+        .catch(err => console.error('Chat error:', err));
+}
+
+function handleSend(e) {
+    e.preventDefault();
+    const input = document.getElementById('chatInput');
+    const content = input.value.trim();
+    if (!content) return;
+
+    input.value = '';
+    sendMessagePayload(content);
+}
+
+function sendMessagePayload(content) {
+    const payload = { content: content };
+    if (currentMode === 'channel') {
+        payload.channel = currentTarget;
+    } else {
+        payload.recipient_id = currentTarget;
+    }
+
+    fetch('/api/chat/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            loadMessages();
+        }
+    })
+    .catch(err => console.error('Send error:', err));
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadMessages();
+    pollInterval = setInterval(loadMessages, 3000);
+});
+</script>
+{% endblock %}

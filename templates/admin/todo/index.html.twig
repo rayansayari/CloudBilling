@@ -1,0 +1,733 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block title %}To-Do Board — CloudBill Admin{% endblock %}
+{% block page_title %}To-Do Board{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* ═══════════════════════════════════════════════════════════
+   KANBAN BOARD — Admin
+═══════════════════════════════════════════════════════════ */
+.todo-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.todo-filter-select {
+    background: var(--adm-surface);
+    border: 1px solid rgba(124,58,237,0.3);
+    color: var(--adm-text);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-width: 200px;
+}
+.todo-filter-select:focus {
+    outline: none;
+    border-color: var(--adm-purple);
+}
+.todo-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: start;
+    min-height: 60vh;
+}
+@media (max-width: 900px) {
+    .todo-board { grid-template-columns: 1fr; }
+}
+.todo-col {
+    background: rgba(15,23,42,0.7);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-height: 300px;
+    transition: box-shadow 0.2s;
+}
+.todo-col.drag-over {
+    box-shadow: 0 0 0 2px var(--adm-purple);
+    background: rgba(124,58,237,0.08);
+}
+.todo-col-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.todo-col-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+}
+.todo-col-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.col-todo     .todo-col-dot { background: #7c3aed; box-shadow: 0 0 6px #7c3aed88; }
+.col-progress .todo-col-dot { background: #0ea5e9; box-shadow: 0 0 6px #0ea5e988; }
+.col-done     .todo-col-dot { background: #10b981; box-shadow: 0 0 6px #10b98188; }
+.todo-col-count {
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--adm-text-muted);
+}
+.todo-col-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 200px;
+}
+.todo-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--adm-text-muted);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    margin-top: 4px;
+}
+.todo-add-btn:hover {
+    border-color: var(--adm-purple);
+    color: var(--adm-purple-l);
+    background: rgba(124,58,237,0.05);
+}
+
+/* ─── Task Card ─────────────────────────────────────────── */
+.todo-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 14px;
+    cursor: grab;
+    transition: all 0.2s;
+    position: relative;
+    user-select: none;
+}
+.todo-card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(124,58,237,0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.todo-card.sortable-chosen {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+.todo-card.sortable-ghost {
+    opacity: 0.2;
+    background: rgba(124,58,237,0.2);
+    border: 2px dashed var(--adm-purple);
+}
+.todo-card-priority-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 12px 0 0 12px;
+}
+.priority-high   .todo-card-priority-bar { background: #ef4444; }
+.priority-medium .todo-card-priority-bar { background: #f59e0b; }
+.priority-low    .todo-card-priority-bar { background: #10b981; }
+
+.todo-card-inner { padding-left: 8px; }
+.todo-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.todo-card-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--adm-text);
+    line-height: 1.4;
+    flex: 1;
+}
+.todo-card-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+.todo-card:hover .todo-card-actions { opacity: 1; }
+.todo-card-action-btn {
+    background: none;
+    border: none;
+    color: var(--adm-text-muted);
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    transition: all 0.15s;
+}
+.todo-card-action-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--adm-text);
+}
+.todo-card-action-btn.del:hover { color: #ef4444; }
+
+.todo-card-desc {
+    font-size: 0.78rem;
+    color: var(--adm-text-muted);
+    margin-bottom: 10px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.todo-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.todo-card-assignee {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--adm-text-muted);
+}
+.todo-card-assignee img {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.todo-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.todo-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+.todo-badge-high   { background: rgba(239,68,68,0.15);  color: #ef4444; }
+.todo-badge-medium { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.todo-badge-low    { background: rgba(16,185,129,0.15); color: #10b981; }
+.todo-badge-overdue { background: rgba(239,68,68,0.2); color: #ef4444; font-size: 0.65rem; }
+.todo-due-date {
+    font-size: 0.72rem;
+    color: var(--adm-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.todo-due-date.overdue { color: #ef4444; }
+
+/* ─── Modal ─────────────────────────────────────────────── */
+.todo-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+.todo-modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
+.todo-modal {
+    background: #0f172a;
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 480px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    transform: translateY(16px);
+    transition: transform 0.2s;
+}
+.todo-modal-overlay.open .todo-modal { transform: translateY(0); }
+.todo-modal h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 20px;
+    color: var(--adm-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.todo-form-group { margin-bottom: 14px; }
+.todo-form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--adm-text-muted);
+    margin-bottom: 6px;
+}
+.todo-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* ─── Clean Form Controls & Select Dropdowns ─────────────── */
+.todo-form-control {
+    width: 100%;
+    background-color: #1e293b !important;
+    background-image: none !important;
+    border: 1px solid rgba(124,58,237,0.35) !important;
+    color: #f1f5f9 !important;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+.todo-form-control::placeholder {
+    color: rgba(148,163,184,0.6) !important;
+}
+.todo-form-control:focus {
+    outline: none !important;
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.2) !important;
+}
+
+/* Select specific styling with clean single arrow */
+select.todo-form-control,
+select.todo-filter-select {
+    background-color: #1e293b !important;
+    border: 1px solid rgba(124,58,237,0.35) !important;
+    color: #f1f5f9 !important;
+    border-radius: 10px;
+    padding: 10px 36px 10px 14px;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a78bfa' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 12px 8px !important;
+}
+
+select.todo-form-control option,
+select.todo-filter-select option {
+    background-color: #0f172a !important;
+    color: #f1f5f9 !important;
+    padding: 10px;
+    font-size: 0.88rem;
+}
+
+/* Date input dark scheme */
+input[type="date"].todo-form-control {
+    color-scheme: dark;
+}
+
+</style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <i class="fas fa-chevron-right" style="font-size:0.5rem; opacity:0.4;"></i>
+    <span>To-Do Board</span>
+{% endblock %}
+
+{% block body %}
+<div class="adm-page-header">
+    <div>
+        <h1>To-Do Board</h1>
+        <p>Gérez et assignez les tâches à vos consultants.</p>
+    </div>
+    <button class="adm-btn adm-btn-primary" onclick="openCreateModal('todo')">
+        <i class="fas fa-plus"></i> Nouvelle tâche
+    </button>
+</div>
+
+{# ─── Toolbar: Filter by consultant ─── #}
+<div class="todo-toolbar">
+    <i class="fas fa-filter" style="color:var(--adm-text-muted); font-size:0.8rem;"></i>
+    <span style="font-size:0.82rem; color:var(--adm-text-muted);">Filtrer par consultant :</span>
+    <form method="GET" action="{{ path('app_admin_todo') }}" style="display:flex; gap:8px; align-items:center;">
+        <select name="user" class="todo-filter-select" onchange="this.form.submit()">
+            <option value="0" {% if filterUserId == 0 %}selected{% endif %}>Tous les utilisateurs</option>
+            {% for u in allUsers %}
+                <option value="{{ u.id }}" {% if filterUserId == u.id %}selected{% endif %}>
+                    {{ u.fullName }}
+                </option>
+            {% endfor %}
+        </select>
+        {% if filterUserId > 0 %}
+            <a href="{{ path('app_admin_todo') }}" class="adm-btn adm-btn-sm" style="color:var(--adm-text-muted);">
+                <i class="fas fa-times"></i> Effacer
+            </a>
+        {% endif %}
+    </form>
+</div>
+
+{# ─── Kanban Board ─── #}
+<div class="todo-board">
+
+    {# Column: À faire #}
+    <div class="todo-col col-todo" id="col-todo" data-status="todo">
+        <div class="todo-col-header">
+            <div class="todo-col-title">
+                <span class="todo-col-dot"></span>
+                <span>À faire</span>
+            </div>
+            <span class="todo-col-count" id="count-todo">{{ todoTasks.todo|length }}</span>
+        </div>
+        <div class="todo-col-body" id="list-todo">
+            {% for task in todoTasks.todo %}
+                {{ _self.taskCard(task) }}
+            {% endfor %}
+        </div>
+        <button class="todo-add-btn" onclick="openCreateModal('todo')">
+            <i class="fas fa-plus"></i> Ajouter une tâche
+        </button>
+    </div>
+
+    {# Column: En cours #}
+    <div class="todo-col col-progress" id="col-in_progress" data-status="in_progress">
+        <div class="todo-col-header">
+            <div class="todo-col-title">
+                <span class="todo-col-dot"></span>
+                <span>En cours</span>
+            </div>
+            <span class="todo-col-count" id="count-in_progress">{{ todoTasks.in_progress|length }}</span>
+        </div>
+        <div class="todo-col-body" id="list-in_progress">
+            {% for task in todoTasks.in_progress %}
+                {{ _self.taskCard(task) }}
+            {% endfor %}
+        </div>
+        <button class="todo-add-btn" onclick="openCreateModal('in_progress')">
+            <i class="fas fa-plus"></i> Ajouter une tâche
+        </button>
+    </div>
+
+    {# Column: Terminé #}
+    <div class="todo-col col-done" id="col-done" data-status="done">
+        <div class="todo-col-header">
+            <div class="todo-col-title">
+                <span class="todo-col-dot"></span>
+                <span>Terminé</span>
+            </div>
+            <span class="todo-col-count" id="count-done">{{ todoTasks.done|length }}</span>
+        </div>
+        <div class="todo-col-body" id="list-done">
+            {% for task in todoTasks.done %}
+                {{ _self.taskCard(task) }}
+            {% endfor %}
+        </div>
+        <button class="todo-add-btn" onclick="openCreateModal('done')">
+            <i class="fas fa-plus"></i> Ajouter une tâche
+        </button>
+    </div>
+</div>
+
+{# ─── Macro: Task Card ─── #}
+{% macro taskCard(task) %}
+<div class="todo-card priority-{{ task.priority }}"
+     id="task-{{ task.id }}"
+     data-id="{{ task.id }}"
+     data-status="{{ task.status }}"
+     data-title="{{ task.title|e('html_attr') }}"
+     data-description="{{ task.description|default('')|e('html_attr') }}"
+     data-priority="{{ task.priority }}"
+     data-due="{{ task.dueDate ? task.dueDate|date('Y-m-d') : '' }}"
+     data-assignee-id="{{ task.assignedTo ? task.assignedTo.id : '' }}">
+    <div class="todo-card-priority-bar"></div>
+    <div class="todo-card-inner">
+        <div class="todo-card-top">
+            <div class="todo-card-title">{{ task.title }}</div>
+            <div class="todo-card-actions">
+                <button class="todo-card-action-btn" onclick="openEditModal({{ task.id }})" title="Modifier">
+                    <i class="fas fa-pen"></i>
+                </button>
+                <button class="todo-card-action-btn del" onclick="deleteTask({{ task.id }})" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        {% if task.description %}
+            <div class="todo-card-desc">{{ task.description }}</div>
+        {% endif %}
+        <div class="todo-card-footer">
+            <div class="todo-card-assignee">
+                {% if task.assignedTo %}
+                    <img src="https://ui-avatars.com/api/?name={{ task.assignedTo.fullName|url_encode }}&background=1e293b&color=a78bfa&bold=true&size=40" alt="">
+                    <span>{{ task.assignedTo.fullName }}</span>
+                {% else %}
+                    <i class="fas fa-user-slash" style="opacity:0.3;"></i>
+                    <span style="opacity:0.4;">Non assigné</span>
+                {% endif %}
+            </div>
+            <div class="todo-card-meta">
+                {% if task.dueDate %}
+                    <div class="todo-due-date {{ task.overdue ? 'overdue' }}">
+                        <i class="fas fa-calendar-alt"></i>
+                        {{ task.dueDate|date('d/m') }}
+                        {% if task.overdue %}<span class="todo-badge todo-badge-overdue">En retard</span>{% endif %}
+                    </div>
+                {% endif %}
+                <span class="todo-badge todo-badge-{{ task.priority }}">
+                    {{ task.priority == 'high' ? 'Haute' : (task.priority == 'medium' ? 'Moyenne' : 'Basse') }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{# ═══════════════════════════════════════════════════════════
+   MODAL — Create / Edit Task
+═══════════════════════════════════════════════════════════ #}
+<div class="todo-modal-overlay" id="taskModal">
+    <div class="todo-modal">
+        <h2>
+            <i class="fas fa-list-check" style="color:var(--adm-purple);"></i>
+            <span id="modalTitle">Nouvelle tâche</span>
+        </h2>
+        <input type="hidden" id="modalMode" value="create">
+        <input type="hidden" id="modalTaskId" value="">
+
+        <div class="todo-form-group">
+            <label class="todo-form-label">Titre *</label>
+            <input type="text" id="taskTitle" class="todo-form-control" placeholder="Ex: Préparer le rapport mensuel">
+        </div>
+        <div class="todo-form-group">
+            <label class="todo-form-label">Description</label>
+            <textarea id="taskDesc" class="todo-form-control" rows="3" placeholder="Détails optionnels…" style="resize:vertical;"></textarea>
+        </div>
+        <div class="todo-form-row">
+            <div class="todo-form-group">
+                <label class="todo-form-label">Assigné à</label>
+                <select id="taskAssignee" class="todo-form-control">
+                    <option value="">— Non assigné —</option>
+                    {% for u in allUsers %}
+                        <option value="{{ u.id }}">{{ u.fullName }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="todo-form-group">
+                <label class="todo-form-label">Priorité</label>
+                <select id="taskPriority" class="todo-form-control">
+                    <option value="low">🟢 Basse</option>
+                    <option value="medium" selected>🟡 Moyenne</option>
+                    <option value="high">🔴 Haute</option>
+                </select>
+            </div>
+        </div>
+        <div class="todo-form-row">
+            <div class="todo-form-group">
+                <label class="todo-form-label">Colonne</label>
+                <select id="taskStatus" class="todo-form-control">
+                    <option value="todo">À faire</option>
+                    <option value="in_progress">En cours</option>
+                    <option value="done">Terminé</option>
+                </select>
+            </div>
+            <div class="todo-form-group">
+                <label class="todo-form-label">Date d'échéance</label>
+                <input type="date" id="taskDueDate" class="todo-form-control">
+            </div>
+        </div>
+        <div class="todo-modal-actions">
+            <button class="adm-btn" onclick="closeModal()">Annuler</button>
+            <button class="adm-btn adm-btn-primary" onclick="submitTask()">
+                <i class="fas fa-check"></i> <span id="submitLabel">Créer</span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+// ─── URLs ─────────────────────────────────────────────────
+const ROUTES = {
+    create : '{{ path('app_admin_todo_create') }}',
+    move   : (id) => `/admin/todo/${id}/move`,
+    edit   : (id) => `/admin/todo/${id}/edit`,
+    del    : (id) => `/admin/todo/${id}/delete`,
+};
+
+// ─── Sortable (drag & drop) ───────────────────────────────
+const lists = ['todo', 'in_progress', 'done'];
+lists.forEach(status => {
+    const el = document.getElementById(`list-${status}`);
+    if (!el) return;
+    Sortable.create(el, {
+        group        : 'tasks',
+        animation    : 180,
+        ghostClass   : 'sortable-ghost',
+        chosenClass  : 'sortable-chosen',
+        delay        : 50,
+        delayOnTouchOnly: true,
+        onEnd(evt) {
+            const taskId    = evt.item.dataset.id;
+            const newStatus = evt.to.closest('.todo-col').dataset.status;
+            const newPos    = evt.newIndex;
+
+            // Optimistic UI: update badge in header
+            updateCounts();
+
+            fetch(ROUTES.move(taskId), {
+                method : 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body   : JSON.stringify({ status: newStatus, position: newPos }),
+            }).catch(() => showToast('Erreur lors du déplacement.', 'error'));
+        }
+    });
+});
+
+function updateCounts() {
+    lists.forEach(s => {
+        const cnt = document.getElementById(`list-${s}`)?.querySelectorAll('.todo-card').length ?? 0;
+        const el  = document.getElementById(`count-${s}`);
+        if (el) el.textContent = cnt;
+    });
+}
+
+// ─── Modal ────────────────────────────────────────────────
+function openCreateModal(defaultStatus = 'todo') {
+    document.getElementById('modalMode').value    = 'create';
+    document.getElementById('modalTitle').textContent = 'Nouvelle tâche';
+    document.getElementById('submitLabel').textContent = 'Créer';
+    document.getElementById('taskTitle').value    = '';
+    document.getElementById('taskDesc').value     = '';
+    document.getElementById('taskAssignee').value = '';
+    document.getElementById('taskPriority').value = 'medium';
+    document.getElementById('taskStatus').value   = defaultStatus;
+    document.getElementById('taskDueDate').value  = '';
+    document.getElementById('modalTaskId').value  = '';
+    document.getElementById('taskModal').classList.add('open');
+    document.getElementById('taskTitle').focus();
+}
+
+function openEditModal(taskId) {
+    const card = document.getElementById(`task-${taskId}`);
+    if (!card) return;
+    document.getElementById('modalMode').value    = 'edit';
+    document.getElementById('modalTitle').textContent = 'Modifier la tâche';
+    document.getElementById('submitLabel').textContent = 'Enregistrer';
+    document.getElementById('modalTaskId').value  = taskId;
+    document.getElementById('taskTitle').value    = card.dataset.title;
+    document.getElementById('taskDesc').value     = card.dataset.description;
+    document.getElementById('taskPriority').value = card.dataset.priority;
+    document.getElementById('taskStatus').value   = card.dataset.status;
+    document.getElementById('taskDueDate').value  = card.dataset.due;
+    document.getElementById('taskAssignee').value = card.dataset.assigneeId;
+    document.getElementById('taskModal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('taskModal').classList.remove('open');
+}
+
+// Close on overlay click
+document.getElementById('taskModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+// ─── Submit (Create or Edit) ───────────────────────────────
+async function submitTask() {
+    const mode    = document.getElementById('modalMode').value;
+    const taskId  = document.getElementById('modalTaskId').value;
+    const title   = document.getElementById('taskTitle').value.trim();
+    if (!title) { document.getElementById('taskTitle').focus(); return; }
+
+    const body = {
+        title      : title,
+        description: document.getElementById('taskDesc').value.trim() || null,
+        status     : document.getElementById('taskStatus').value,
+        priority   : document.getElementById('taskPriority').value,
+        dueDate    : document.getElementById('taskDueDate').value || null,
+        assignedToId: document.getElementById('taskAssignee').value || null,
+    };
+
+    const url    = mode === 'create' ? ROUTES.create : ROUTES.edit(taskId);
+    const method = mode === 'create' ? 'POST' : 'PATCH';
+
+    try {
+        const res  = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error();
+        // Reload page to re-render with updated data
+        window.location.reload();
+    } catch {
+        showToast('Une erreur est survenue.', 'error');
+    }
+}
+
+// ─── Delete ───────────────────────────────────────────────
+async function deleteTask(taskId) {
+    if (!confirm('Supprimer cette tâche ?')) return;
+    try {
+        const res = await fetch(ROUTES.del(taskId), { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        const card = document.getElementById(`task-${taskId}`);
+        if (card) {
+            card.style.transition = 'all 0.3s';
+            card.style.opacity    = '0';
+            card.style.transform  = 'scale(0.9)';
+            setTimeout(() => { card.remove(); updateCounts(); }, 300);
+        }
+        showToast('Tâche supprimée.', 'success');
+    } catch {
+        showToast('Erreur lors de la suppression.', 'error');
+    }
+}
+
+// ─── Toast ────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = `
+        position:fixed; bottom:24px; right:24px; z-index:9999;
+        background:${type === 'success' ? '#10b981' : '#ef4444'};
+        color:#fff; padding:10px 18px; border-radius:10px;
+        font-size:0.84rem; font-weight:600; font-family:Inter,sans-serif;
+        box-shadow:0 4px 20px rgba(0,0,0,0.4);
+        animation: fadeInUp 0.3s ease;
+    `;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+</script>
+{% endblock %}

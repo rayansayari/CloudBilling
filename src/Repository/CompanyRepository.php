@@ -13,12 +13,12 @@ class CompanyRepository extends ServiceEntityRepository
         parent::__construct($registry, Company::class);
     }
 
-    public function search(?string $query): array
+    public function search(?string $query)
     {
         $qb = $this->createQueryBuilder('c')->orderBy('c.name', 'ASC');
         if ($query) {
             $qb->andWhere('c.name LIKE :q OR c.email LIKE :q')->setParameter('q', '%'.$query.'%');
         }
-        return $qb->getQuery()->getResult();
+        return $qb;
     }
 }

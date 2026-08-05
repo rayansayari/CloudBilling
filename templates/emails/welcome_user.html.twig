@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue sur CloudBill</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: 'Segoe UI', Arial, sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f172a; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%;">
+
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding-bottom: 32px;">
+                            <table cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 16px; padding: 14px 28px;">
+                                        <span style="color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">
+                                            ☁ CloudBill
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Main Card -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #1e293b 0%, #1a1f35 100%); border-radius: 20px; border: 1px solid rgba(99,102,241,0.3); overflow: hidden;">
+
+                            <!-- Top accent bar -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></td>
+                                </tr>
+                            </table>
+
+                            <!-- Content -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
+                                <tr>
+                                    <td>
+                                        <!-- Welcome icon -->
+                                        <table cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+                                            <tr>
+                                                <td style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.4); border-radius: 14px; padding: 14px 16px; font-size: 28px;">
+                                                    👋
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Title -->
+                                        <h1 style="color: #f1f5f9; font-size: 26px; font-weight: 700; margin: 0 0 10px 0; letter-spacing: -0.5px;">
+                                            Bienvenue sur CloudBill !
+                                        </h1>
+                                        <p style="color: #94a3b8; font-size: 15px; margin: 0 0 32px 0; line-height: 1.6;">
+                                            Votre compte a été créé avec succès par l'administrateur. Voici vos informations de connexion.
+                                        </p>
+
+                                        <!-- Credentials Box -->
+                                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
+                                            <tr>
+                                                <td style="background: rgba(15,23,42,0.8); border: 1px solid rgba(99,102,241,0.25); border-radius: 14px; padding: 24px;">
+
+                                                    <p style="color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 16px 0;">
+                                                        🔐 Vos identifiants de connexion
+                                                    </p>
+
+                                                    <!-- Email row -->
+                                                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 14px;">
+                                                        <tr>
+                                                            <td style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: 10px; padding: 12px 16px;">
+                                                                <p style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 4px 0;">📧 Adresse Email</p>
+                                                                <p style="color: #e2e8f0; font-size: 15px; font-weight: 600; margin: 0;">{{ userEmail }}</p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+
+                                                    <!-- Password row -->
+                                                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 14px;">
+                                                        <tr>
+                                                            <td style="background: rgba(236,72,153,0.08); border: 1px solid rgba(236,72,153,0.2); border-radius: 10px; padding: 12px 16px;">
+                                                                <p style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 4px 0;">🔑 Mot de Passe</p>
+                                                                <p style="color: #f472b6; font-size: 17px; font-weight: 700; font-family: 'Courier New', monospace; margin: 0; letter-spacing: 0.08em;">{{ plainPassword }}</p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+
+                                                    <!-- Role row -->
+                                                    <table width="100%" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 12px 16px;">
+                                                                <p style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 4px 0;">👤 Rôle</p>
+                                                                <p style="color: #34d399; font-size: 14px; font-weight: 600; margin: 0;">{{ userRole }}</p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Warning Box -->
+                                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
+                                            <tr>
+                                                <td style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 12px; padding: 16px 20px;">
+                                                    <p style="color: #fbbf24; font-size: 13px; margin: 0; line-height: 1.6;">
+                                                        ⚠️ <strong>Important :</strong> Pour votre sécurité, changez votre mot de passe dès votre première connexion.
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- CTA Button -->
+                                        <table cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 12px; padding: 1px;">
+                                                    <a href="{{ appUrl }}" style="display: block; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 11px; padding: 14px 32px; color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; letter-spacing: 0.02em;">
+                                                        🚀 Accéder à CloudBill
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Divider -->
+                                        <table width="100%" cellpadding="0" cellspacing="0" style="margin: 32px 0;">
+                                            <tr>
+                                                <td style="height: 1px; background: rgba(99,102,241,0.15);"></td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Greeting -->
+                                        <p style="color: #475569; font-size: 13px; margin: 0; line-height: 1.7;">
+                                            Cordialement,<br>
+                                            <strong style="color: #94a3b8;">L'équipe CloudBill</strong>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="padding-top: 24px;">
+                            <p style="color: #334155; font-size: 12px; margin: 0;">
+                                © {{ "now"|date("Y") }} CloudBill Platform — Cet email est confidentiel.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

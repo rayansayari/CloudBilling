@@ -22,7 +22,7 @@ class ProjectRepository extends ServiceEntityRepository
             ->getQuery()->getResult();
     }
 
-    public function search(?string $query, ?int $companyId = null): array
+    public function search(?string $query, ?int $companyId = null)
     {
         $qb = $this->createQueryBuilder('p')->join('p.company', 'c')->orderBy('p.soNumber', 'ASC');
         if ($query) {
@@ -32,6 +32,6 @@ class ProjectRepository extends ServiceEntityRepository
         if ($companyId) {
             $qb->andWhere('p.company = :cid')->setParameter('cid', $companyId);
         }
-        return $qb->getQuery()->getResult();
+        return $qb;
     }
 }
