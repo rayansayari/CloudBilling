@@ -7,6 +7,9 @@ use App\Entity\InvoiceLine;
 use App\Entity\Project;
 use App\Repository\InvoiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Twig\Environment;
 
 class InvoiceService
 {
@@ -14,6 +17,10 @@ class InvoiceService
         private EntityManagerInterface $em,
         private InvoiceRepository $invoiceRepository,
         private AuditService $auditService,
+        private MailerInterface $mailer,
+        private Environment $twig,
+        private string $mailerFromAddress = 'noreply@cloudbill.com',
+        private string $mailerFromName = 'CloudBill Platform',
     ) {}
 
     /**
@@ -101,7 +108,7 @@ class InvoiceService
     }
 
     /**
-     * Validate an invoice (freeze it).
+     * Validate an invoice (freeze it) and send email notification to the company.
      */
     public function validateInvoice(Invoice $invoice, $user): void
     {
@@ -116,6 +123,45 @@ class InvoiceService
 
         $this->auditService->log('VALIDATE', 'Invoice', $invoice->getId(),
             "Facture {$invoice->getReference()} validée — Total TTC: {$invoice->getTotalTTC()} {$invoice->getCurrency()}");
+
+        // Send email notification to the company
+        $this->sendInvoiceValidationEmail($invoice);
+    }
+
+    /**
+     * Send the validated invoice by email to the company.
+     */
+    private function sendInvoiceValidationEmail(Invoice $invoice): void
+    {
+        $company = $invoice->getProject()?->getCompany();
+        $companyEmail = $company?->getEmail();
+
+        if (!$companyEmail) {
+            // No email configured for this company — skip silently
+            return;
+        }
+
+        try {
+            $htmlContent = $this->twig->render('emails/invoice_validated.html.twig', [
+                'invoice' => $invoice,
+                'company' => $company,
+            ]);
+
+            $email = (new Email())
+                ->from("{$this->mailerFromName} <{$this->mailerFromAddress}>")
+                ->to($companyEmail)
+                ->subject("Facture {$invoice->getReference()} — {$invoice->getMonthName()} {$invoice->getYear()} — CloudBill")
+                ->html($htmlContent);
+
+            $this->mailer->send($email);
+
+            $this->auditService->log('EMAIL', 'Invoice', $invoice->getId(),
+                "Email de facturation envoyé à {$companyEmail} pour {$invoice->getReference()}");
+        } catch (\Exception $e) {
+            // Log error but don't fail the validation process
+            $this->auditService->log('EMAIL_ERROR', 'Invoice', $invoice->getId(),
+                "Échec envoi email à {$companyEmail} : {$e->getMessage()}");
+        }
     }
 
     /**
